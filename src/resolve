@@ -1,0 +1,61 @@
+
+constraint: version string, constraint string
+
+any given tool has a suite of what's going on:
+
+pretty much all of these are static
+
+package_properties:
+    validate name
+    validate version
+    compare versions
+    validate constraint relationship
+    constraint string -> (name, version, relationship)
+    check constraint
+
+package_tool:
+    name -> listof constraints
+
+repositoryIO: operator () taking a name and returning a map from versions to files.
+struct file: url, checksum (maybe).
+
+package_tool:
+resolver: package_properties, package_tool, repository
+
+
+
+
+resolve(const std::map<name, std::list<constraints> > order) {
+
+    std::list<file> returned;
+    for (auto package : order) {
+        std::string name = package.first;
+        std::list<constraint> constraints = package.second;
+        std::map<version, file> candidates = this->repository.query(name);
+
+        for (auto constraint : constraints) {
+            std::remove_if(candidates.begin(), candidates.end(),
+                    this->package_properties.satisfies(constraint))
+        }
+
+        if (candidates.empty() ) {
+            return returned;
+        }
+
+        candidates = sort(candidates,
+            []{ return -1 * this->package_properties.vercmp(); } );
+
+        for (auto candidate : candidates) {
+            auto candidate_version = candidate.first;
+            auto candidate_file = candidate.second;
+            auto candidate_deps =
+                this->repository.query_dependencies(name, candidate_version);
+            auto candidate_dep_files = resolve(candidate_deps);
+            if (!candidate_dep_files.empty()) {
+                returned = returned + candidate_dep_fils; // concatenate lists, use move semantics if possible
+                returned.push_back(candidate_file);
+                break;
+            }
+        }
+    }
+}
