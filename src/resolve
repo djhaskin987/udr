@@ -13,15 +13,43 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-constraint: version string, constraint string
+struct constraint
+{
+    std::string version;
+    std::string constraint;
+};
 
-any given tool has a suite of what's going on:
+// this is a concrete class.
+class package_properties
+{
+private:
+    std::function<bool(std::string)> validate_name;
+    std::function<bool(std::string)> validate_version;
+    std::function<int(std::string,std::string)> compare_versions;
+    std::function<bool(constraint)> validate_constraint;
+    std::function<bool(constraint,std::string)> check_constraint;
+public:
+    const std::function<bool(std::string)> validate_name() {
+        return validate_name;
+    }
+    const std::function<bool(std::string)> validate_version() {
+        return validate_version;
+    }
+    const std::function<int(std::string,std::string)> compare_versions() {
+        return compare_versions;
+    }
+    const std::function<bool(std::string)> satisfies(constraint c) {
+        return [this->check_constraint,c](std::string ver) {
+            return this->check_constraint(c, ver);
+        };
+    }
+};
+
 
 pretty much all of these are static
 
-package_properties:
-    validate name
-    validate version
+package_properties:s
+
     compare versions
     validate constraint relationship
     constraint string -> (name, version, relationship)
@@ -57,14 +85,14 @@ resolve(const std::map<name, std::list<constraints> > order) {
         }
 
         candidates = sort(candidates,
-            []{ return -1 * this->package_properties.vercmp(); } );
+            []{ return -1 * this->package_properties.compare_versions(); } );
 
         for (auto candidate : candidates) {
             auto candidate_version = candidate.first;
             auto candidate_file = candidate.second;
             auto candidate_deps =
                 this->repository.query_dependencies(name, candidate_version);
-            auto candidate_dep_files = resolve(candidate_deps);
+            auto candidate_dep_files = this->resolve(candidate_deps);
             if (!candidate_dep_files.empty()) {
                 returned = returned + candidate_dep_fils; // concatenate lists, use move semantics if possible
                 returned.push_back(candidate_file);
