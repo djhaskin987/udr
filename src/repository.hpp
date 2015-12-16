@@ -13,14 +13,27 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+#ifndef UDR_REPOSITORY_HPP
+#define UDR_REPOSITORY_HPP 1
+#include <list>
+#include <algorithm>
+#include <string>
+
+
 struct constraint
 {
     std::string version;
     std::string constraint;
 };
 
+struct file
+{
+    std::string url;
+    std::string checksum;
+};
+
 // this is a concrete class.
-class package_properties
+class package_behavior_profile
 {
 private:
     std::function<bool(std::string)> validate_name;
@@ -45,39 +58,23 @@ public:
     }
 };
 
-
-pretty much all of these are static
-
-package_properties:s
-
-    compare versions
-    validate constraint relationship
-    constraint string -> (name, version, relationship)
-    check constraint
-
-package_tool:
-    name -> listof constraints
-
-repositoryIO: operator () taking a name and returning a map from versions to files.
-struct file: url, checksum (maybe).
-
-package_tool:
-resolver: package_properties, package_tool, repository
-
-
-
-
-resolve(const std::map<name, std::list<constraints> > order) {
+class respository {
+private:
+    package_behavior_profile package_behavior;
+    std::function<std::map<version,file>(const std::string &)> query;
+    std::function<std::map<name, std::list<constraint>(const std::string &, const std::string &) > query_dependencies;
+public:
+    std::list<file> resolve(const std::map<name, std::list<constraint> > order) {
 
     std::list<file> returned;
     for (auto package : order) {
         std::string name = package.first;
         std::list<constraint> constraints = package.second;
-        std::map<version, file> candidates = this->repository.query(name);
+        std::map<version, file> candidates = this->query(name);
 
         for (auto constraint : constraints) {
             std::remove_if(candidates.begin(), candidates.end(),
-                    this->package_properties.satisfies(constraint))
+                    this->package_behavior.satisfies(constraint))
         }
 
         if (candidates.empty() ) {
@@ -85,19 +82,23 @@ resolve(const std::map<name, std::list<constraints> > order) {
         }
 
         candidates = sort(candidates,
-            []{ return -1 * this->package_properties.compare_versions(); } );
+            []{ return -1 * this->package_behavior.compare_versions(); } );
 
         for (auto candidate : candidates) {
             auto candidate_version = candidate.first;
             auto candidate_file = candidate.second;
             auto candidate_deps =
-                this->repository.query_dependencies(name, candidate_version);
+                this->query_dependencies(name, candidate_version);
             auto candidate_dep_files = this->resolve(candidate_deps);
             if (!candidate_dep_files.empty()) {
-                returned = returned + candidate_dep_fils; // concatenate lists, use move semantics if possible
+                // concatenate lists, use move semantics if possible
+                returned = returned + candidate_dep_files;
+
                 returned.push_back(candidate_file);
                 break;
             }
         }
     }
-}
+    }
+};
+#endif // UDR_REPOSITORY_HPP

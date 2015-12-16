@@ -1,3 +1,10 @@
+# Editor files
+*~
+\#*
+.#*
+.*#
+.*.sw[a-z]
+
 # Compiled Object files
 *.slo
 *.lo
