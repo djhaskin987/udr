@@ -26,33 +26,47 @@ namespace udr {
     typedef std::function<bool(version_type)> constraint_type;
 
 
+    class repository {
+        public:
+            virtual std::forward_list<std::pair<version_type, URL> > query_candidates(
+                    const name_type & name) = 0;
+    };
+
     class package_system {
         public:
             virtual std::unordered_map<name_type, std::unordered_set<constraint_type> >
                 query_dependencies(
                         const name_type & name,
                         const version_type & version) = 0;
-            virtual std::unordered_map<version_type, URL> query_candidates(
-                    const name_type & name) = 0;
-            virtual int compare_versions(const version_type & a,
-                    const version_type & b) = 0;
+            virtual std::shared_ptr<repository>
+                repository_from(const URL & url) = 0;
             virtual std::unordered_map<name_type, std::unordered_set<constraint_type> >
                 constraints_from_string(
                         const std::string & constraints) = 0;
     };
 
-    class repository {
+    class resolver {
         private:
             const package_system *system;
             std::forward_list<URL> resolve(const std::unordered_map<name_type, std::unordered_set<constraint_type> &
-                    order) const {
+                    order, const repository & repo) const {
+                // Better way to match repo's package system and this's pakcage
+                // system?
+                // We still need to work out this 'repo' thing.
+                if (repo.system() != system) {
+                    throw an_exception;
+                }
                 std::forward_list<URL> result;
                 for (auto package : order) {
                     auto name = package.first;
                     auto constraints = package.second;
 
-                    std::unordered_map<version_type, URL> candidates =
-                        system->query_candidates(name);
+                    // a list for a REASON
+                    // Lets the package system determine
+                    // what version of package to try first
+                    // This allows pooling vs priority repositories.
+                    std::forward_list<std::pair<version_type, URL> > candidates =
+                        repo->query_candidates(name);
                     for (auto constraint : constraints) {
                         std::remove_if(candidates.begin(), candidates.end(),
                                 [constraint&](auto x){return constraint(x.first);});
@@ -61,12 +75,6 @@ namespace udr {
                     if (candidates.empty() ) {
                         return result;
                     }
-
-                    // sort in descending order, latest versions first
-                    std::stable_sort(candidates,
-                            [](a, b) {
-                            return system->compare_versions(a,b) * -1;
-                            });
 
                     for (auto candidate : candidates) {
                         auto candidate_version = candidate.first;

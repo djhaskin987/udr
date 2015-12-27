@@ -1,4 +1,5 @@
 * Structure looks good to go -/
+* Add repository infrastructure: priority vs pooling, etc. clean this up.
 * Add code of conduct
 * Split out cpp from hpp
 * Write Unit tests
