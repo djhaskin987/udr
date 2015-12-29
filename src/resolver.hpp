@@ -18,44 +18,31 @@ limitations under the License.
 #include <list>
 #include <algorithm>
 #include <string>
+#include "types.hpp"
+#include <boost/expected.hpp>
 
+/* TODO:
+ *   - Expected value use for repository
+ *   - Start implementing stuff
+ */
 namespace udr {
-    typedef std::string URL;
-    typedef std::string name_type;
-    typedef std::string version_type;
-    typedef std::function<bool(version_type)> constraint_type;
-
-
     class repository {
         public:
-            virtual std::forward_list<std::pair<version_type, URL> > query_candidates(
+            virtual std::forward_list<std::pair<version_type, URL> > query_available(
                     const name_type & name) = 0;
-    };
-
-    class package_system {
-        public:
             virtual std::unordered_map<name_type, std::unordered_set<constraint_type> >
                 query_dependencies(
                         const name_type & name,
                         const version_type & version) = 0;
-            virtual std::shared_ptr<repository>
-                repository_from(const URL & url) = 0;
-            virtual std::unordered_map<name_type, std::unordered_set<constraint_type> >
-                constraints_from_string(
-                        const std::string & constraints) = 0;
     };
 
     class resolver {
         private:
-            const package_system *system;
-            std::forward_list<URL> resolve(const std::unordered_map<name_type, std::unordered_set<constraint_type> &
-                    order, const repository & repo) const {
-                // Better way to match repo's package system and this's pakcage
-                // system?
-                // We still need to work out this 'repo' thing.
-                if (repo.system() != system) {
-                    throw an_exception;
-                }
+            const repository *repo;
+        public:
+            boost::expected< std::forward_list<URL>,
+                std::forward_list<std::pair<name_type, std::unordered_set<constraint_type> > >
+                resolve(const order_type & order) const {
                 std::forward_list<URL> result;
                 for (auto package : order) {
                     auto name = package.first;
@@ -66,35 +53,41 @@ namespace udr {
                     // what version of package to try first
                     // This allows pooling vs priority repositories.
                     std::forward_list<std::pair<version_type, URL> > candidates =
-                        repo->query_candidates(name);
+                        repo->query_available(name);
                     for (auto constraint : constraints) {
                         std::remove_if(candidates.begin(), candidates.end(),
                                 [constraint&](auto x){return constraint(x.first);});
                     }
 
                     if (candidates.empty() ) {
-                        return result;
+                        std::forward_list<std::pair<name_type, std::unordered_set<constraint_type> > > lst;
+                        lst.push_front(package);
+                        return make_unexpected(lst);
                     }
 
                     for (auto candidate : candidates) {
                         auto candidate_version = candidate.first;
                         auto candidate_url = candidate.second;
                         auto candidate_deps =
-                            system->query_dependencies(name, candidate_version);
+                            repo->query_dependencies(name, candidate_version);
                         auto candidate_dep_urls = this->resolve(candidate_deps);
-                        if (!candidate_dep_urls.empty()) {
-                            // concatenate lists, use move semantics if possible
-                            result.splice(result.cend(), candidate_dep_files);
-                            break;
+                        if (candidate_dep_urls) {
+                            if (!(*candidate_dep_urls).empty()) {
+                                result.splice(result.cend(), *candidate_dep_urls);
+                            }
+                        }
+                        else
+                        {
+                            // return error case
+                            std::forwared_list<std::pair<name_type, unordered_set<constraint_type> > >
+                                lst;
+                            lst.splice(lst.cend(),candidate_dep_urls.error().value());
+                            return lst;
                         }
                         result.push_back(candidate_url);
                     }
                 }
                 return result;
-            }
-        public:
-            std::forward_list<URL> resolve(const std::string & constraints) const {
-                return resolve(system->constraints_from_string(constraints));
             }
     };
 }
