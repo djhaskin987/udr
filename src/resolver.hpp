@@ -24,6 +24,19 @@ limitations under the License.
 /* TODO:
  *   - Expected value use for repository
  *   - Start implementing stuff
+ *   - circular dependencies
+ *   - conjunctive normal form orders
+ *   - DNF is easier to process, but CNF is more natural to specify.
+ *   - (a>1&a<2|b>1&b<2)&(b>3&b<4|c>3&c<8)
+ *   - (b>1&b<2&b>3&b<4)|(a>1&a<2&c>3&c<8)
+     *   cnf terms: {name -> (relation -> version)}
+     *   dnf terms: {name -> (relation -> version)}
+     *   convert from cnf to dnf, or at least specify in dnf to start with
+ *   - memoize what candidates have already been found a&b|(a&c);(in the case of (a|b@1)&(b@|c)&d&b@3 -> b@1,2,3|a&c, previously memoize that we've already found b (or so? i don't like first found).
+ *       - Get list of which names are in multiple terms and how many terms they are in. Resolve their terms first, preferring the names which are listed frequently.
+ *       - If I can use b to satisfy both, that is better. Therefore, 
+ *   - template by name type so that they can validate, set it by default to udr::name_type
+ *   - version type is a thing, with comparison and match() -- template or virtualize?
  */
 namespace udr {
     class repository {
