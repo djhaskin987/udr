@@ -1,0 +1,29 @@
+[
+    {
+        "destination": "packages/",
+        "package_type": "pip",
+        "repository": {
+            "type": "chained",
+            "repositories": [
+                {
+                    "type": "single",
+                    "url": "a"
+                },
+                {
+                    "type": "pooled",
+                    "repositories": [
+                        {
+                            "type": "single",
+                            "url": "b",
+                        },
+                        {
+                            "type": "single",
+                            "url": "c"
+                        }
+                    ]
+                }
+            ]
+        }
+        "requirements": [{}]
+    }
+]
