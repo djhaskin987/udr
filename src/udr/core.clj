@@ -1,20 +1,142 @@
 (ns udr.core)
 ;; supposing we add provides.
 ;; provides: name, version -> name, version
-;; (a(>3&<2)&b(>3&<2))|
-;; a|b>2&b<2|c&c|d&d|e ->
-;; a&b&c&d | b&c&d&e via
-;; a>1&a<1 is valid input, but returns unsatisfiable
-;;  requirement ->_     _<- possibilities: requirement
-;; to-install: (setof (name -> setof (string, relation, pattern)))
+
+;; requirements used to be setof(setof), but I changed
+;; it to listof(listof). setof(setof) implied
+;; nondeterminism. Therein lies madness.
+;; Instead, I went with lists. Determinism is good,
+;; and the users probably will like it.
+
+;;    requirements ->_     _<- possibilities: requirement
+;; requirements: (listof (name -> listof (string, relation, pattern)))
 ;; already-installed: (name -> version)
 ;; conflicts: name -> setof (string, relation, pattern)
-;; returns: setof {:packages (name -> {:version vers, :url url}), :conflicts (name -> setof (string, relation, version))}
+;; returns: (name -> {:version vers, :url url})
 ;; As coded, this does not keep track of conflicts picked up along the way.
 (defun resolve [requirements
                 already-installed
                 conflicts
                 query]
+  (loop [solution-so-far {}
+         requirements requirements
+         already-installed already-installed
+         conflicts conflicts]
+    (if (empty? to-install)
+      solution-so-far
+      (let [requirement (first requirements)
+            other-requirements (rest requirements)]
+        (let [{:packages fulfillment
+               :conflicts fulfillment-conflicts}
+              (let [check-result (reduce-kv
+               (fn [stuffs
+                    package-name
+                    package-constraints]
+                 (if (and (contains? already-installed package-name)
+                          (let [package-version (get already-installed package-name)]
+                            ;; This form will return `true` if constraints are empty
+                            ;; Yay!
+                            (reduce
+                             (fn [cum test]
+                               (and cum
+                                    (let [{:explain string :relation relation :pattern pattern} test]
+                                      (relation
+                                       package-version
+                                       pattern))))
+                             true package-constraints)))
+                   (reduced {:packages {} :conflicts {}})
+                   stuffs))
+               :thatsnotit
+               requirement)]
+              (if (not (= check-result :thatsnotit))
+                check-result
+                (reduce-kv
+                 (fn [stuffs
+                      package-name
+                      package-constraints]
+                   ;; can only check conflicts with a concrete candidate
+                   ;; short circuit check done here.
+                   (if (and (contains? conflicts package-name)
+                            (empty? (get conflicts package-name)))
+                     stuffs
+                     ;; and here i recursively call
+                     
+                            (let [(get conflicts package-name) package-constraints]
+                            (reduce
+                             (fn [cum test]
+                               (and cum
+                                    (let [{:explain string :relation relation :pattern pattern} test]
+                                      (relation
+                                       package-version
+                                       pattern))))
+                             true
+                             package-constraints)))
+                     stuffs
+                     
+
+
+
+                     (reduce
+                              (fn [cum-solutions-so-far
+                                   candidate]
+                                (let [{:version candidate-version
+                                       :url candidate-url
+                                       :conflicts candidate-conflicts
+                                       :depends candidate-depends} candidate
+                                      ;; match to see if candidate is in conflict first, if not,
+                                      ;; then go get it.
+                                      (resolve candidate-depends
+                                               (assoc already-installed
+                                                      name
+                                                      candidate-version)
+                                               (into conflicts candidate-conflicts
+                                                     non-possibilities)
+                                               query) candidate-result]
+                                  (if (= candidate-result :unsatisfiable)
+                                    cum-solutions-so-far
+                                    (reduce
+                                     (fn [solutions-so-far
+                                          solution]
+                                       (conj solutions-so-far
+                                             (let [{:packages solution-packages
+                                                    :conflicts solution-conflicts}
+                                                   solution]
+                                               {:packages (assoc solution-packages name
+                                                                 {:versoin candidate-version
+                                                                  :url candidate-url})
+                                                :conflicts
+                                                (into solution-conflicts candidate-conflicts)})))
+                                     cum-solutions-so-far
+                                     candidate-result)))))
+                     
+
+                 
+                
+                
+               
+
+
+               (reduce-kv
+                (fn [stuffs
+                     package-name
+                     package-
+                )
+
+               
+               requirement)
+
+              
+
+          ]
+          (recur (into solutions-so-far fulfillment)
+                 other-requirements
+                 (into already-installed
+                       (map
+                        (fn [entry]
+                          [(key entry)
+                           (:version (val entry))])))
+                 (into conflicts fulfillment-conflicts)))))))
+
   (if (or (empty? requirements)
           (null? requirements)
           #{}
