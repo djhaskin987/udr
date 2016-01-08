@@ -18,12 +18,29 @@ limitations under the License.
 
 
 namespace udr {
-    typedef std::string URL;
-    typedef std::string name_type;
-    typedef std::string version_type;
-    typedef std::function<bool(version_type)> constraint_type;
-    typedef std::unordered_map<name_type, std::unordered_set<constraint_type> >
-        order_type;
+    typedef std::string url_type;
+    /*
+     * 
+     */
+    typedef std::unordered_set<std::pair<udr::constraint<version_type>,
+                                    version_type> > constraints_type;
+    typedef std::pair<name_type, constraints_type> possibility_type;
+    typedef std::vector<possibility_type> requirement_type;
+    typedef std::vector<requirement_type> requirements_type;
+    typedef std::unordered_map<name_type, constraints_type> conflicts_type;
+    typedef std::unordered_map<name_type, name_type> obsoleted_by_type;
+    typedef std::tuple<version_type, url_type, obsoletes_type, conflicts_type>
+    found_package_type;
+    typedef std::unordered_map<name_type,
+                                > satisfied_results_type;
+    // feels functional-y, not right.
+    typedef enum class {
+        UNSATISFIABLE,
+            SATISFIED,
+            UNNEEDED
+            } result_tag_type;
+    // magic happens here
+    typedef std::tuple<result_tag_type, std::vector<std::pair<name_type, constraints_type> > -or- std::unordered_map<name_type, std::tuple<version_type, url_type, obsoletes_type, conflicts_type> > -or- std::tuple<name_type, resolve_results_type;
 }
 
 #endif

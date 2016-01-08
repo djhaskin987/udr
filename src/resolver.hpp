@@ -39,24 +39,29 @@ limitations under the License.
  *   - version type is a thing, with comparison and match() -- template or virtualize?
  */
 namespace udr {
+    template <typename name_type, typename version_type>
     class repository {
         public:
-            virtual std::forward_list<std::pair<version_type, URL> > query_available(
-                    const name_type & name) = 0;
-            virtual std::unordered_map<name_type, std::unordered_set<constraint_type> >
-                query_dependencies(
-                        const name_type & name,
-                        const version_type & version) = 0;
+        virtual std::vector<std::tuple<version_type,
+                                       url_type,
+                                       requirement_type,
+                                       conflicts_type,
+                                       suggests_type,
+                                       obsoleted_by_type> >
+        query(const name_type & name) = 0;
     };
 
+
+    template <typename name_type, typename version_type>
     class resolver {
         private:
             const repository *repo;
         public:
-            boost::expected< std::forward_list<URL>,
-                std::forward_list<std::pair<name_type, std::unordered_set<constraint_type> > >
+        
+            boost::expected< std::vector<URL>,
+                std::vector<std::pair<name_type, std::unordered_set<version_constraint_type> > >
                 resolve(const order_type & order) const {
-                std::forward_list<URL> result;
+                std::vector<URL> result;
                 for (auto package : order) {
                     auto name = package.first;
                     auto constraints = package.second;
@@ -65,7 +70,7 @@ namespace udr {
                     // Lets the package system determine
                     // what version of package to try first
                     // This allows pooling vs priority repositories.
-                    std::forward_list<std::pair<version_type, URL> > candidates =
+                    std::vector<std::pair<version_type, URL> > candidates =
                         repo->query_available(name);
                     for (auto constraint : constraints) {
                         std::remove_if(candidates.begin(), candidates.end(),
@@ -73,7 +78,7 @@ namespace udr {
                     }
 
                     if (candidates.empty() ) {
-                        std::forward_list<std::pair<name_type, std::unordered_set<constraint_type> > > lst;
+                        std::vector<std::pair<name_type, std::unordered_set<constraint_type> > > lst;
                         lst.push_front(package);
                         return make_unexpected(lst);
                     }
