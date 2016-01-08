@@ -31,7 +31,8 @@ advantages:
 
 # Supported OSes
 
-It is intended that the following OSes with their compilers will be supported:
+It is intended that the following OSes with their compilers will be eventually
+supported:
 
 OS | Compiler on OS
 ---|---------------
@@ -39,6 +40,15 @@ Windows | msvc2013
 Mac | clang
 Ubuntu 14.04-16.04 | gcc
 CentOS 6-7 | gcc
+
+I will try to make this code build on Windows and Linux, but I'll need
+help with the Mac side of things, as I don't own a Mac :(
+
+## Why not just use clang for all OSes?
+
+I like the idea of supporting the most conventional compiler for each OS.
+Universal clang support may eventually come, but I'd like to focus on
+the compilers listed above for their respective OSes first :)
 
 # How to build
 
