@@ -14,6 +14,7 @@ where I'm solving a problem as a build engineer and I just need a generic depend
 So I am building this so that I can use it in my career.
 
 ## Why C++?
+
 I seriously considered writing this in a higher-level language than
 C++ to write this, especially since its intended audience is build and
 DevOps engineers. However, even considering the audience, C++ has some serious
@@ -33,7 +34,7 @@ advantages:
 It is intended that the following OSes with their compilers will be supported:
 
 OS | Compiler on OS
--------------------
+---|---------------
 Windows | msvc2013
 Mac | clang
 Ubuntu 14.04-16.04 | gcc
@@ -86,8 +87,7 @@ request, feature request, bug report, or other contribution, made in
 part or as a whole with the apparent purpose of talking about,
 criticizing, or affecting anything but what the code should be and how
 it should behave is at best off topic, and at worst offensive to
-somebody. I will listen to complaints at
-![this udr abuse email](udr-abuse-email.svg). I reserve the right to
+somebody. I will listen to complaints at ![this udr abuse email](udr-abuse-email.svg) . I reserve the right to
 delete any comments or block PRs if those contributions are hurting someone's
 feelings through blatant attack or insensitivity.
 
