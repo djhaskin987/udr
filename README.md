@@ -97,9 +97,9 @@ request, feature request, bug report, or other contribution, made in
 part or as a whole with the apparent purpose of talking about,
 criticizing, or affecting anything but what the code should be and how
 it should behave is at best off topic, and at worst offensive to
-somebody. I will listen to complaints at ![this udr abuse email](udr-abuse-email.svg) . I reserve the right to
-delete any comments or block PRs if those contributions are hurting someone's
-feelings through blatant attack or insensitivity.
+somebody. I will listen to complaints at ![this udr abuse email](udr-abuse-email.png) .
+I reserve the right to delete any comments or block PRs if those contributions
+are hurting someone's feelings through blatant attack or insensitivity.
 
 * Also:
   - Be nice.
