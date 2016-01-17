@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef UDR_REPOSITORY_HPP
-#define UDR_REPOSITORY_HPP 1
+#ifndef UDR_RESOLVER_HPP
+#define UDR_RESOLVER_HPP 1
 #include <list>
 #include <algorithm>
 #include <string>
@@ -39,28 +39,142 @@ limitations under the License.
  *   - version type is a thing, with comparison and match() -- template or virtualize?
  */
 namespace udr {
-    template <typename name_type, typename version_type>
+
+    typedef std::string url_type;
+    template <typename V>
+        using std::function<bool(const V &, const V &)> = constraint_type;
+    template <typename N, typename V>
+        using std::pair<N, constraint_type<V> > = specifier_type;
+    template <typename N, typename V>
+        using std::vector<specifier_type<N, V> > = possibilities_type;
+    template <typename N, typename V>
+        using std::vector<possibilities_type<N, V> > = order_type;
+    template <typename N, typename V>
+        using std::tuple<V,         // version
+              url_type,             // URL
+              order_type<N, V>,     // requires
+              boost::optional<N>,   // *obsoletes* (not obsoleted_by), maybe
+              order_type<N, V> >    // suggests
+                  = package_type;
+    template <typename N, typename V>
+        using 
+
+    template <typename N, typename V>
     class repository {
         public:
-        virtual std::vector<std::tuple<version_type,
-                                       url_type,
-                                       requirement_type,
-                                       conflicts_type,
-                                       suggests_type,
-                                       obsoleted_by_type> >
-        query(const name_type & name) = 0;
+            typedef N name_type;
+            typedef V version_type;
+            virtual std::vector<package_type> query(const N & name) const = 0;
     };
 
-
-    template <typename name_type, typename version_type>
+    template <typename N, typename V>
     class resolver {
-        private:
-            const repository *repo;
-        public:
+    private:
+        typedef std::vector<std::pair<N, std::set<constraint<V> > > >
+            resolver_failed_type;
+        typedef std::pair<name_type, resolver_success_type> resolver_unneeded_type;
+        typedef boost::variant<resolver_success_type,
+                               resolver_failed_type,
+                               resolver_unneeded_type> resolver_result_type;
+        typedef std::vector<std::vector<std::pair<N, std::set<constraint<V> > > > >
+            order_type;
+
+        const repository *repo;
+
+
+        void find_candidate(requirement) {
+            for (auto possibility : requirement)
+            {
+                auto name = possibility.first;
+                auto possibility_constraints = possibility.second;
+
+                auto obs_itr = obsoleted_by.find(name);
+                boost::optional<name_type> obs_name = boost::none;
+                if (obs_itr != obsoleted_by.end()) {
+                    obs_name = obs_itr->second;
+                }
+                if (already_installed.find(name) != already_installed.end()) {
+                    return boost::none;
+                }
+                else if (conflicts.find(name) != conflicts.end() &&
+                         conflicts[name].size() == 0)
+                {
+                    // clearly no candidate will win, so don't query, just
+                    // go.
+                    continue;
+                }
+
+                auto candidates repo->query(name);
+                auto candidate_itr =
+                    find_if(candidates.cbegin(), candidates.cend(),
+                            [&](auto candidate) {
+                                version_type c_ver;
+                                url_type _;
+                                std::vector<std::vector<std::pair<name_type, std::set<constraint> > > >
+                                c_reqs, c_suggests;
+                                std::map<name_type, std::set<constraint> > c_conflicts;
+                                boost::optional<name_type> c_ob_by;
+                                std::tie(c_ver, _, c_reqs, c_conflicts, c_ob_by, c_suggests) =
+                                candidate;
+                                if (conflicts.find(name) != conflicts.end() &&
+                                    std::all_of(possibility_constraints,
+                                                [&cver](auto constraint) {
+                                                    constraint(c_ver)
+                                                        })) {
+                                    return false;
+                                }
+                                else
+                                {
+                                    // clause where I'm not in conflict.
+                                    // here comes the ugly recursive call.
+                                }
+                            });
+                if (candidate_itr != candidates.end()) {
+                    return *candidate_itr;
+                }
+            }
+        }
         
-            boost::expected< std::vector<URL>,
-                std::vector<std::pair<name_type, std::unordered_set<version_constraint_type> > >
-                resolve(const order_type & order) const {
+        resolver_result_type resolve(
+            const std::vector<std::vector<std::pair<name_type, std::set<constraint> > > > & order,
+            std::map<name_type, version_type> & already_installed,
+            std::map<name_type, name_type> & obsoleted_by,
+            std::map<name_type, std::set<constraint> > & conflicts,
+            std::map<name_type, std::set<constraint> > & already_considered) {
+            // possibly reorder here before something happens
+            // Here, if there are any possibilities common among the
+            // requirements, we move them to the front of the vector
+            // of possibilities in which they reside, in order of
+            // which ones are most common.
+            // After reordering, we continue as usual
+            for (auto requirement : order)
+            {
+                auto candidate = find_candidate(requirement);
+                if (candidate) {
+                    version_type c_ver;
+                    url_type c_url;
+                    std::vector<std::vector<std::pair<name_type, std::set<constraint> > > >
+                                c_reqs, c_suggests;
+                    std::map<name_type, std::set<constraint> > c_conflicts;
+                    boost::optional<name_type> c_ob_by;
+                    std::tie(c_ver, c_url, c_reqs, c_conflicts, c_ob_by, c_suggests) =
+                        *candidate;
+                    
+                }
+                else
+                {
+                    return resolver_success_type{};
+                }
+
+                if (no possibilities were resolved)
+                {
+                    return unsatisfiable;
+                }
+            }
+        }
+    public:
+        resolver_success_type resolve(const order_type & order) const {
+            // call *actual* resolver here
                 std::vector<URL> result;
                 for (auto package : order) {
                     auto name = package.first;
@@ -78,7 +192,7 @@ namespace udr {
                     }
 
                     if (candidates.empty() ) {
-                        std::vector<std::pair<name_type, std::unordered_set<constraint_type> > > lst;
+                        std::vector<std::pair<name_type, std::set<constraint_type> > > lst;
                         lst.push_front(package);
                         return make_unexpected(lst);
                     }
@@ -97,7 +211,7 @@ namespace udr {
                         else
                         {
                             // return error case
-                            std::forwared_list<std::pair<name_type, unordered_set<constraint_type> > >
+                            std::forwared_list<std::pair<name_type, set<constraint_type> > >
                                 lst;
                             lst.splice(lst.cend(),candidate_dep_urls.error().value());
                             return lst;
