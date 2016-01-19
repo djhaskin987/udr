@@ -234,11 +234,10 @@ namespace udr {
             return boost::none;
         }
 
-        // this is the private version
+        // This is the private version
         // because in order to do stuff like
-        // pass sets and maps down recursively
-        // and perform reordering, everything passed
-        // in must be mutable.
+        // pass sets and maps down recursively,
+        // (most) everything passed in must be mutable.
         resolver_result_type resolve(
                 // A constant reference to an ordered collection.
                 // Aaah, determinism.
@@ -289,53 +288,7 @@ namespace udr {
 
     public:
         resolver_success_type resolve(const order_type & order) const {
-            // call *actual* resolver here
-                std::vector<URL> result;
-                for (auto package : order) {
-                    auto name = package.first;
-                    auto constraints = package.second;
-
-                    // a list for a REASON
-                    // Lets the package system determine
-                    // what version of package to try first
-                    // This allows pooling vs priority repositories.
-                    std::vector<std::pair<version_type, URL> > candidates =
-                        repo->query_available(name);
-                    for (auto constraint : constraints) {
-                        std::remove_if(candidates.begin(), candidates.end(),
-                                [constraint&](auto x){return constraint(x.first);});
-                    }
-
-                    if (candidates.empty() ) {
-                        std::vector<std::pair<name_type, std::set<constraint_type> > > lst;
-                        lst.push_front(package);
-                        return make_unexpected(lst);
-                    }
-
-                    for (auto candidate : candidates) {
-                        auto candidate_version = candidate.first;
-                        auto candidate_url = candidate.second;
-                        auto candidate_deps =
-                            repo->query_dependencies(name, candidate_version);
-                        auto candidate_dep_urls = this->resolve(candidate_deps);
-                        if (candidate_dep_urls) {
-                            if (!(*candidate_dep_urls).empty()) {
-                                result.splice(result.cend(), *candidate_dep_urls);
-                            }
-                        }
-                        else
-                        {
-                            // return error case
-                            std::forwared_list<std::pair<name_type, set<constraint_type> > >
-                                lst;
-                            lst.splice(lst.cend(),candidate_dep_urls.error().value());
-                            return lst;
-                        }
-                        result.push_back(candidate_url);
-                    }
-                }
-                return result;
-            }
+        }
     };
 }
 
