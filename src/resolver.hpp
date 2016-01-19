@@ -21,6 +21,15 @@ limitations under the License.
 #include "types.hpp"
 #include <boost/expected.hpp>
 
+
+
+/// HAVING A CONSTRAINT IS NOT GOOD.
+// I NEED A VECTOR OF CONSTRAINTS
+// SO THAT I CAN ALSO EASILY HAVE NO
+// CONSTRAINTS AT ALL
+// EITHER THAT OR GET IT TO WHERE
+// CONSTRAINTS DEFAULT TO "true"
+//
 /* TODO:
  *   - Expected value use for repository
  *   - Start implementing stuff
@@ -34,7 +43,7 @@ limitations under the License.
      *   convert from cnf to dnf, or at least specify in dnf to start with
  *   - memoize what candidates have already been found a&b|(a&c);(in the case of (a|b@1)&(b@|c)&d&b@3 -> b@1,2,3|a&c, previously memoize that we've already found b (or so? i don't like first found).
  *       - Get list of which names are in multiple terms and how many terms they are in. Resolve their terms first, preferring the names which are listed frequently.
- *       - If I can use b to satisfy both, that is better. Therefore, 
+ *       - If I can use b to satisfy both, that is better. Therefore,
  *   - template by name type so that they can validate, set it by default to udr::name_type
  *   - version type is a thing, with comparison and match() -- template or virtualize?
  */
@@ -43,135 +52,241 @@ namespace udr {
     typedef std::string url_type;
     template <typename V>
         using std::function<bool(const V &, const V &)> = constraint_type;
+
     template <typename N, typename V>
-        using std::pair<N, constraint_type<V> > = specifier_type;
+    struct package_specifier
+    {
+        typedef N name_type;
+        typedef V version_type;
+        name_type name;
+        std::vector< constraint_type<version_type> > constraints;
+    }
+
     template <typename N, typename V>
-        using std::vector<specifier_type<N, V> > = possibilities_type;
+    struct package
+    {
+        typedef N name_type;
+        typedef V version_type;
+        version_type version;
+        url_type URL;
+        order_type<N, V> requires;
+        boost::optional<N> obsoletes;
+        order_type<N, V> suggests;
+        package() = default;
+    };
+
+    template <typename N, typename V>
+        using std::vector<package_specifier<N, V> > = possibilities_type;
+
     template <typename N, typename V>
         using std::vector<possibilities_type<N, V> > = order_type;
-    template <typename N, typename V>
-        using std::tuple<V,         // version
-              url_type,             // URL
-              order_type<N, V>,     // requires
-              boost::optional<N>,   // *obsoletes* (not obsoleted_by), maybe
-              order_type<N, V> >    // suggests
-                  = package_type;
-    template <typename N, typename V>
-        using 
+
 
     template <typename N, typename V>
     class repository {
         public:
             typedef N name_type;
             typedef V version_type;
-            virtual std::vector<package_type> query(const N & name) const = 0;
+            virtual std::vector<package> query(const N & name) const = 0;
     };
 
     template <typename N, typename V>
     class resolver {
-    private:
-        typedef std::vector<std::pair<N, std::set<constraint<V> > > >
-            resolver_failed_type;
-        typedef std::pair<name_type, resolver_success_type> resolver_unneeded_type;
+        public:
+            enum class suggests_policy {
+                REQUIRED,
+                BEST_EFFORT,
+                IGNORE
+            };
+
+        private:
+            suggests_policy policy;
+        // herein lies a lot of typedefs and the use of boost::variant.
+        // Please excuse my heavy LISP accent.
+        // Or should I just say, pleathe excuthe my lithp? :P
+        typedef std::vector<package<N,V> > resolver_success_type;
+        typedef order_type<N, V> resolver_failure_type;
+        // not useful, given possibilities. Even candidates for one possibility
+        /*
+        template <typename N, typename V>
+        struct resolver_failed_type
+        {
+            typedef N name_type;
+            typedef V version_type;
+
+            std::vector<package_specifier<N, V> > ancestor_line;
+            N name;
+            resolver_failed_type() = default;
+        };
         typedef boost::variant<resolver_success_type,
-                               resolver_failed_type,
-                               resolver_unneeded_type> resolver_result_type;
-        typedef std::vector<std::vector<std::pair<N, std::set<constraint<V> > > > >
-            order_type;
+                               resolver_failed_type> resolver_result_type;
+        */
+        typedef boost::optional<resolver_success_type>
+            resolver_result_type;
+
 
         const repository *repo;
+        const bool reorder;
 
-
-        void find_candidate(requirement) {
-            for (auto possibility : requirement)
-            {
-                auto name = possibility.first;
-                auto possibility_constraints = possibility.second;
-
-                auto obs_itr = obsoleted_by.find(name);
-                boost::optional<name_type> obs_name = boost::none;
-                if (obs_itr != obsoleted_by.end()) {
-                    obs_name = obs_itr->second;
+        resolver_result_type resolve_requirement(
+                const possibilities_type & requirement,
+                order_type<N, V> & suggests,
+                std::map<N, V> & already_installed,
+                std::map<N, N> & obsoleted_by,
+                std::map<N, std::vector< constraint_type > > & conflicts) {
+            for (auto possibility : requirement) {
+                auto search_installed = already_installed.find(possibility.name);
+                if (search_installed != already_installed.end()) {
+                    if (all_of(possibility.constraints.cbegin(),
+                                possibility.constraints.cend(),
+                                [&search_installed](auto constraint) {
+                                    constraint((*search_installed).second)
+                                })) {
+                        return resolver_success_type{};
+                    }
+                    else {
+                        return boost::none;
+                    }
                 }
-                if (already_installed.find(name) != already_installed.end()) {
-                    return boost::none;
-                }
-                else if (conflicts.find(name) != conflicts.end() &&
-                         conflicts[name].size() == 0)
-                {
-                    // clearly no candidate will win, so don't query, just
-                    // go.
-                    continue;
-                }
+                else {
+                    auto search_conflicts = conflicts.find(possibility.name);
+                    // check for blank-check conflict with _name_
+                    if (search_conflicts != conflicts.cend() &&
+                            (*search_conflicts).second.empty()) {
+                        return boost::none;
+                    }
+                    else {
+                        auto candidates = repo->query(possibility.name);
+                        for (auto candidate : candidates) {
+                            if (!all_of(possibility.constraints.cbegin(),
+                                        possibility.constraints.cend(),
+                                        [&candidate](auto constraint) {
+                                            return constraint(candidate.version)
+                                        }))
+                            {
+                                continue;
+                            }
+                            // check again for granular conflict this time
+                            if (search_conflicts != conflicts.cend() &&
+                                    all_of((*search_conflicts).second.cbegin(),
+                                        (*search_conflicts).second.cend(),
+                                        [&candidate](auto conflict) {
+                                            return conflict(candidate.version)
+                                        })) {
+                                continue;
+                            }
+                            // OOOOOOKay.
+                            // We'll take this mutation one at a time.
+                            // newsuggests. suppose we add stuff. if it fails,
+                            // we just remove it again.
+                            // newalreadyinstalled. Suppose we add stuff.
+                            suggests.insert(suggests.end(),
+                                    candidate.suggests.begin(),
+                                    candidate.suggests.end());
+                            already_installed.insert(possibility.name,
+                                    candidate.version);
+                            // Can we do this safely yet? NO.
+                            // We cannot prove yet with current code that
+                            // obsoleted_by doesn't already have the
+                            // given name in it already.
+                            //
+                            // We need to provide this guarantee by implementing
+                            // code that uses this feature.
+                            if (candidate.obsoletes) {
+                                obsoleted_by.insert(*(candidate.obsoletes),
+                                        possibility.name);
+                            }
+                            conflicts.insert(suggests.end(),
+                                    candidate.conflicts.begin(),
+                                    candidate.conflicts.end());
 
-                auto candidates repo->query(name);
-                auto candidate_itr =
-                    find_if(candidates.cbegin(), candidates.cend(),
-                            [&](auto candidate) {
-                                version_type c_ver;
-                                url_type _;
-                                std::vector<std::vector<std::pair<name_type, std::set<constraint> > > >
-                                c_reqs, c_suggests;
-                                std::map<name_type, std::set<constraint> > c_conflicts;
-                                boost::optional<name_type> c_ob_by;
-                                std::tie(c_ver, _, c_reqs, c_conflicts, c_ob_by, c_suggests) =
-                                candidate;
-                                if (conflicts.find(name) != conflicts.end() &&
-                                    std::all_of(possibility_constraints,
-                                                [&cver](auto constraint) {
-                                                    constraint(c_ver)
-                                                        })) {
-                                    return false;
+                            auto results = resolve(
+                                    candidate.requires,
+                                    suggests,
+                                    already_installed,
+                                    obsoleted_by,
+                                    conflicts);
+                            if (results) {
+                                // In this case, we want the mutations above to
+                                // persist, so we are clear to simply return
+                                // success and leave the sets mutated for future
+                                // use by the calling resolve() function.
+                                return *results;
+                            }
+                            else {
+                                // Put everything back.
+                                suggests.erase(
+                                        suggests.end() -
+                                            candidate.suggests.size(),
+                                        suggests.end());
+                                already_installed.erase(possibility.name);
+                                if (candidate.obsoletes) {
+                                    obsoleted_by.erase(*(candidate.obsoletes));
                                 }
-                                else
-                                {
-                                    // clause where I'm not in conflict.
-                                    // here comes the ugly recursive call.
-                                }
-                            });
-                if (candidate_itr != candidates.end()) {
-                    return *candidate_itr;
+                                conflicts.erase(
+                                        conflicts.end() - candidate.conflicts.size(),
+                                        conflicts.end());
+                            }
+                        }
+                    }
                 }
             }
+            return boost::none;
         }
-        
+
+        // this is the private version
+        // because in order to do stuff like
+        // pass sets and maps down recursively
+        // and perform reordering, everything passed
+        // in must be mutable.
         resolver_result_type resolve(
-            const std::vector<std::vector<std::pair<name_type, std::set<constraint> > > > & order,
-            std::map<name_type, version_type> & already_installed,
-            std::map<name_type, name_type> & obsoleted_by,
-            std::map<name_type, std::set<constraint> > & conflicts,
-            std::map<name_type, std::set<constraint> > & already_considered) {
-            // possibly reorder here before something happens
-            // Here, if there are any possibilities common among the
-            // requirements, we move them to the front of the vector
-            // of possibilities in which they reside, in order of
-            // which ones are most common.
-            // After reordering, we continue as usual
-            for (auto requirement : order)
-            {
-                auto candidate = find_candidate(requirement);
-                if (candidate) {
-                    version_type c_ver;
-                    url_type c_url;
-                    std::vector<std::vector<std::pair<name_type, std::set<constraint> > > >
-                                c_reqs, c_suggests;
-                    std::map<name_type, std::set<constraint> > c_conflicts;
-                    boost::optional<name_type> c_ob_by;
-                    std::tie(c_ver, c_url, c_reqs, c_conflicts, c_ob_by, c_suggests) =
-                        *candidate;
-                    
+                // A constant reference to an ordered collection.
+                // Aaah, determinism.
+                const order_type<N, V> & requires,
+                order_type<N, V> & suggests,
+                std::map<N, V> & already_installed,
+                std::map<N, N> & obsoleted_by,
+                std::map<N, std::vector< constraint_type> > & conflicts) {
+
+            resolver_success_type cumulative;
+
+            for (auto requirement : requires) {
+                auto results = resolve_requirement(requirement,
+                        suggests,
+                        already_installed,
+                        obsoleted_by,
+                        conflicts
+                        );
+                if (results) {
+                    cumulative.insert(cumulative.cend(), (*results).first(),
+                            (*results).last());
                 }
                 else
                 {
-                    return resolver_success_type{};
-                }
-
-                if (no possibilities were resolved)
-                {
-                    return unsatisfiable;
+                    return boost::none;
                 }
             }
+            if (this->policy != suggests_policy::IGNORE) {
+                for (auto suggestion : suggests) {
+                    auto results = resolve_requirement(requirement,
+                            suggests,
+                            already_installed,
+                            obsoleted_by,
+                            conflicts
+                            );
+                    if (results) {
+                        cumulative.insert(cumulative.cend(), (*results).first(),
+                                (*results).last());
+                    }
+                    else
+                    {
+                        return boost::none;
+                    }
+                }
+            }
+            return cumulative;
         }
+
     public:
         resolver_success_type resolve(const order_type & order) const {
             // call *actual* resolver here
