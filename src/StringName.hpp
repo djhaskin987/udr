@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Daniel Jay Haskin
+   Copyright 2015-2016 Daniel Jay Haskin
 
    Licensed under the Apache License, Name 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ namespace UDR
         private:
             std::string name;
         public:
-
-            virtual ~StringName();
-
+            StringName() = default;
+            virtual ~StringName() = default;
+            std::string name() const;
             virtual bool equals(const ConstNamePtr & other) const override;
     };
 }

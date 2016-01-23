@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Daniel Jay Haskin
+   Copyright 2015-2016 Daniel Jay Haskin
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
