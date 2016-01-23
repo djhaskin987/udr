@@ -1,10 +1,11 @@
 include_directories(../src/)
-add_executable(TestIntegerVersion
-    ${CMAKE_CURRENT_SOURCE_DIR}/TestIntegerVersion.cpp
-    ${CMAKE_SOURCE_DIR}/src/IntegerVersion.cpp)
+add_executable(TestAPIClasses
+    ${CMAKE_CURRENT_SOURCE_DIR}/TestAPIClasses.cpp
+    ${CMAKE_SOURCE_DIR}/src/IntegerVersion.cpp
+    ${CMAKE_SOURCE_DIR}/src/StringName.cpp)
 add_test(
-    NAME TestIntegerVersion
-    COMMAND TestIntegerVersion --report_level=detailed
+    NAME TestAPIClasses
+    COMMAND TestAPIClasses --report_level=detailed
     )
-target_link_libraries(TestIntegerVersion boost_unit_test_framework)
-target_compile_features(TestIntegerVersion PRIVATE cxx_nullptr cxx_noexcept)
+target_link_libraries(TestAPIClasses boost_unit_test_framework)
+target_compile_features(TestAPIClasses PRIVATE cxx_nullptr cxx_noexcept)

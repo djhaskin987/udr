@@ -21,8 +21,45 @@ limitations under the License.
 
 #define UDR_UNIT_TEST
 #include "IntegerVersion.hpp"
+#include "StringName.hpp"
 
 BOOST_AUTO_TEST_SUITE( IntegerVersion )
+
+class TestVersion : public Version
+{
+    public:
+        TestVersion() = default;
+        virtual ~TestVersion() {}
+
+        virtual int compare(const ConstVersionPtr & other) const override
+        {
+            return -1;
+        }
+
+        virtual bool matches(const ConstVersionPtr & other) const override
+        {
+            return false;
+        }
+}
+
+struct TypesFixture
+{
+    auto badTyped = std::unique_ptr<const Version>(
+            static_cast<const Version*>(new TestVersion(val)));
+    auto goodTyped = UDR::IntegerVersion::Create(12);
+    TypesFixture() = default;
+    ~TypesFixture() = default;
+};
+
+BOOST_FIXTURE_TEST_CASE( compareTypes, TypesFixture )
+{
+    BOOST_CHECK_THROW(goodTyped.compare(badTyped), UDR::VersionMismatchException);
+}
+
+BOOST_FIXTURE_TEST_CASE( matchesTypes, TypesFixture )
+{
+    BOOST_CHECK_THROW(goodTyped.matches(badTyped), UDR::VersionMismatchException);
+}
 
 BOOST_AUTO_TEST_CASE( compare )
 {
@@ -60,5 +97,20 @@ BOOST_AUTO_TEST_CASE( match )
     BOOST_CHECK( d->matches(c) );
     BOOST_CHECK( b->matches(d) );
 }
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( StringName )
+
+BOOST_AUTO_TEST_CASE( name )
+{
+
+}
+
+BOOST_AUTO_TEST_CASE( equals )
+{
+}
+
+BOOST_AUTO_TEST_CASE( equals_exception )
 
 BOOST_AUTO_TEST_SUITE_END()
