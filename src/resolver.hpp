@@ -82,15 +82,23 @@ namespace udr {
         using std::vector<possibilities_type<N, V> > = order_type;
 
 
-    template <typename N, typename V>
+    // this is dumb. You're already using templating, why use the other?
+    // This is the *rough* interface used by the template.
+    /*
+    template <typename N = std::string, typename V = std::string>
     class repository {
         public:
             typedef N name_type;
             typedef V version_type;
-            virtual std::vector<package> query(const N & name) const = 0;
+            virtual std::vector<package<N, V> > query_literal(const N & name) const = 0;
+            virtual std::vector<package<N, V> > query_provides(const N & name) const = 0;
+            virtual std::vector<package<N, V> > query_obsoletes(const N & name) const = 0;
     };
+    */
 
-    template <typename N, typename V>
+    template <typename N = std::string, typename V = std::string,
+             me V> R>
+
     class resolver {
         public:
             enum class suggests_policy {
@@ -156,8 +164,19 @@ namespace udr {
                         return boost::none;
                     }
                     else {
-                        auto candidates = repo->query(possibility.name);
-                        for (auto candidate : candidates) {
+                        auto results = repo->query(possibility.name);
+                        if (possibility.hasNoLessThans()) {
+                            auto obsoleting_candidates = results.obsoleted_by;
+                            if (! obsoleting_candidates.empty())
+                            {
+                                // treat obsoletes as doctrine
+                                
+                            }
+                        }
+                        // treat literal here
+                        // TODO: Uncoded: treat provides just like literals, if
+                        // any, *if no literals are present*.
+                        for (auto candidate : results.literal) {
                             if (!all_of(possibility.constraints.cbegin(),
                                         possibility.constraints.cend(),
                                         [&candidate](auto constraint) {
