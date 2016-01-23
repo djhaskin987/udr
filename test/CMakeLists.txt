@@ -1,7 +1,10 @@
 include_directories(../src/)
-add_executable(test_gripe ${CMAKE_CURRENT_SOURCE_DIR}/test_gripe.cpp)
+add_executable(TestIntegerVersion
+    ${CMAKE_CURRENT_SOURCE_DIR}/TestIntegerVersion.cpp
+    ${CMAKE_SOURCE_DIR}/src/IntegerVersion.cpp)
 add_test(
-    NAME test_gripe
-    COMMAND test_gripe --report_level=detailed
+    NAME TestIntegerVersion
+    COMMAND TestIntegerVersion --report_level=detailed
     )
-target_link_libraries(test_gripe boost_unit_test_framework)
+target_link_libraries(TestIntegerVersion boost_unit_test_framework)
+target_compile_features(TestIntegerVersion PRIVATE cxx_nullptr cxx_noexcept)

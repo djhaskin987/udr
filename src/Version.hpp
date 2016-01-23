@@ -15,12 +15,22 @@ limitations under the License.
 */
 #ifndef UDR_VERSION_HPP
 #define UDR_VERSION_HPP 1
-
+#include <memory>
+#include <exception>
 namespace UDR
 {
     class Version;
-    using std::unique_ptr<Version> = VersionPtr;
-    using std::unique_ptr<const Version> = ConstVersionPtr;
+    typedef std::unique_ptr<Version> VersionPtr;
+    typedef std::unique_ptr<const Version> ConstVersionPtr;
+
+    class VersionMismatchException : public std::exception
+    {
+        public:
+            virtual const char * what() const noexcept
+            {
+                return "Incompatible version types";
+            }
+    };
 
     class Version
     {
@@ -29,13 +39,15 @@ namespace UDR
             // needed?
             //virtual std::unique_ptr<Version*> clone() = 0;
 
+            Version() = default;
             Version(const Version&) = delete;
             Version& operator=(const Version&) = delete;
 
-            virtual ~Version() = 0;
+            virtual ~Version()
+            { }
 
             virtual int compare(const ConstVersionPtr & other) const = 0;
-            virtual bool match(const ConstVersionPtr & other) const = 0;
+            virtual bool matches(const ConstVersionPtr & other) const = 0;
     };
 }
 
