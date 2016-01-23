@@ -16,11 +16,23 @@ limitations under the License.
 #ifndef UDR_NAME_HPP 1
 #define UDR_NAME_HPP 1
 
+#include <exception>
+#include <memory>
+
 namespace UDR
 {
     class Name;
     using std::unique_ptr<Name> = NamePtr;
     using std::unique_ptr<const Name> = const ConstNamePtr;
+
+    class NameMismatchException : public std::exception
+    {
+        public:
+            virtual const char * what() const noexcept
+            {
+                return "Incompatible name types";
+            }
+    };
 
     class Name
     {
@@ -28,11 +40,12 @@ namespace UDR
 
             // needed?
             //virtual std::unique_ptr<Name*> clone() = 0;
-
+            Name() = default;
             Name(const Name&) = delete;
             Name& operator=(const Name&) = delete;
 
-            virtual ~Name() = 0;
+            virtual ~Name()
+            { }
 
             virtual bool equals(const ConstNamePtr & other) const = 0;
     };
