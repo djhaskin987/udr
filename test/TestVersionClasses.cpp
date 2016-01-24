@@ -21,9 +21,6 @@ limitations under the License.
 
 #define UDR_UNIT_TEST
 #include "IntegerVersion.hpp"
-#include "StringName.hpp"
-
-BOOST_AUTO_TEST_SUITE( IntegerVersion )
 
 class TestVersion : public Version
 {
@@ -42,7 +39,9 @@ class TestVersion : public Version
         }
 }
 
-struct TypesFixture
+BOOST_AUTO_TEST_SUITE( IntegerVersion )
+
+struct VersionTypesFixture
 {
     auto badTyped = std::unique_ptr<const Version>(
             static_cast<const Version*>(new TestVersion(val)));
@@ -51,12 +50,12 @@ struct TypesFixture
     ~TypesFixture() = default;
 };
 
-BOOST_FIXTURE_TEST_CASE( compareTypes, TypesFixture )
+BOOST_FIXTURE_TEST_CASE( compareTypes, VersionTypesFixture )
 {
     BOOST_CHECK_THROW(goodTyped.compare(badTyped), UDR::VersionMismatchException);
 }
 
-BOOST_FIXTURE_TEST_CASE( matchesTypes, TypesFixture )
+BOOST_FIXTURE_TEST_CASE( matchesTypes, VersionTypesFixture )
 {
     BOOST_CHECK_THROW(goodTyped.matches(badTyped), UDR::VersionMismatchException);
 }
@@ -102,13 +101,37 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( StringName )
 
+class TestName : public Name
+{
+    public:
+        TestVersion() = default;
+        virtual ~TestVersion() {}
+
+        virtual int compare(const ConstVersionPtr & other) const override
+        {
+            return -1;
+        }
+
+        virtual bool matches(const ConstVersionPtr & other) const override
+        {
+            return false;
+        }
+}
+
 BOOST_AUTO_TEST_CASE( name )
 {
-
+    UDR::ConstStringNamePtr a = UDR::StringName::Create("I AM MORDAC");
+    BOOST_CHECK_EQUAL(a->name(), std::string("I AM MORDAC"));
 }
 
 BOOST_AUTO_TEST_CASE( equals )
 {
+    UDR::ConstNamePtr a = UDR::StringName::Create("I AM MORDAC");
+    UDR::ConstNamePtr b = UDR::StringName::Create("I AM MORDAC");
+    UDR::ConstNamePtr c = UDR::StringName::Create("I AM WEB MISTRESS MIN");
+    BOOST_CHECK(a->equals(a));
+    BOOST_CHECK(a->equals(b));
+    BOOST_CHECK(! b->equals(c));
 }
 
 BOOST_AUTO_TEST_CASE( equals_exception )
