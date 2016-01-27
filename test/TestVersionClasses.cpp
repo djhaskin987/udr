@@ -22,42 +22,42 @@ limitations under the License.
 #define UDR_UNIT_TEST
 #include "IntegerVersion.hpp"
 
-class TestVersion : public Version
+class TestVersion : public UDR::Version
 {
     public:
         TestVersion() = default;
         virtual ~TestVersion() {}
 
-        virtual int compare(const ConstVersionPtr & other) const override
+        virtual int compare(const UDR::ConstVersionPtr & other) const override
         {
             return -1;
         }
 
-        virtual bool matches(const ConstVersionPtr & other) const override
+        virtual bool matches(const UDR::ConstVersionPtr & other) const override
         {
             return false;
         }
-}
+};
 
 BOOST_AUTO_TEST_SUITE( IntegerVersion )
 
 struct VersionTypesFixture
 {
-    auto badTyped = std::unique_ptr<const Version>(
-            static_cast<const Version*>(new TestVersion(val)));
-    auto goodTyped = UDR::IntegerVersion::Create(12);
-    TypesFixture() = default;
-    ~TypesFixture() = default;
+    UDR::ConstVersionPtr badTyped = std::unique_ptr<const UDR::Version>(
+            static_cast<const UDR::Version*>(new TestVersion()));
+    UDR::ConstVersionPtr goodTyped = UDR::IntegerVersion::Create(12);
+    VersionTypesFixture() = default;
+    ~VersionTypesFixture() = default;
 };
 
 BOOST_FIXTURE_TEST_CASE( compareTypes, VersionTypesFixture )
 {
-    BOOST_CHECK_THROW(goodTyped.compare(badTyped), UDR::VersionMismatchException);
+    BOOST_CHECK_THROW(goodTyped->compare(badTyped), UDR::VersionMismatchException);
 }
 
 BOOST_FIXTURE_TEST_CASE( matchesTypes, VersionTypesFixture )
 {
-    BOOST_CHECK_THROW(goodTyped.matches(badTyped), UDR::VersionMismatchException);
+    BOOST_CHECK_THROW(goodTyped->matches(badTyped), UDR::VersionMismatchException);
 }
 
 BOOST_AUTO_TEST_CASE( compare )
@@ -96,44 +96,5 @@ BOOST_AUTO_TEST_CASE( match )
     BOOST_CHECK( d->matches(c) );
     BOOST_CHECK( b->matches(d) );
 }
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( StringName )
-
-class TestName : public Name
-{
-    public:
-        TestVersion() = default;
-        virtual ~TestVersion() {}
-
-        virtual int compare(const ConstVersionPtr & other) const override
-        {
-            return -1;
-        }
-
-        virtual bool matches(const ConstVersionPtr & other) const override
-        {
-            return false;
-        }
-}
-
-BOOST_AUTO_TEST_CASE( name )
-{
-    UDR::ConstStringNamePtr a = UDR::StringName::Create("I AM MORDAC");
-    BOOST_CHECK_EQUAL(a->name(), std::string("I AM MORDAC"));
-}
-
-BOOST_AUTO_TEST_CASE( equals )
-{
-    UDR::ConstNamePtr a = UDR::StringName::Create("I AM MORDAC");
-    UDR::ConstNamePtr b = UDR::StringName::Create("I AM MORDAC");
-    UDR::ConstNamePtr c = UDR::StringName::Create("I AM WEB MISTRESS MIN");
-    BOOST_CHECK(a->equals(a));
-    BOOST_CHECK(a->equals(b));
-    BOOST_CHECK(! b->equals(c));
-}
-
-BOOST_AUTO_TEST_CASE( equals_exception )
 
 BOOST_AUTO_TEST_SUITE_END()

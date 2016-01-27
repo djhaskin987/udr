@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef UDR_STRING_NAME_HPP 1
+#ifndef UDR_STRING_NAME_HPP
 #define UDR_STRING_NAME_HPP 1
 
 #include <string>
@@ -21,16 +21,21 @@ limitations under the License.
 
 namespace UDR
 {
+    class StringName;
+    typedef std::unique_ptr<StringName> StringNamePtr;
+    typedef std::unique_ptr<const StringName> ConstStringNamePtr;
 
     class StringName : public Name
     {
         private:
             std::string name;
         public:
+            StringName(const std::string & name);
             StringName() = default;
             virtual ~StringName() = default;
-            std::string name() const;
+            virtual std::string getName() const;
             virtual bool equals(const ConstNamePtr & other) const override;
+            static ConstNamePtr Create(const std::string & name);
     };
 }
 

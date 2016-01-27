@@ -17,18 +17,19 @@ limitations under the License.
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+#include <memory>
 
 #define UDR_UNIT_TEST
 #include "Name.hpp"
 #include "StringName.hpp"
 
-class TestName : public Name
+class TestName : public UDR::Name
 {
     public:
         TestName() = default;
         virtual ~TestName() {}
 
-        virtual bool equals(const ConstNamePtr & other) const override
+        virtual bool equals(const UDR::ConstNamePtr & other) const override
         {
             return false;
         }
@@ -36,27 +37,12 @@ class TestName : public Name
 
 BOOST_AUTO_TEST_SUITE( StringName )
 
-class TestName : public Name
-{
-    public:
-        TestVersion() = default;
-        virtual ~TestVersion() {}
-
-        virtual int compare(const ConstVersionPtr & other) const override
-        {
-            return -1;
-        }
-
-        virtual bool matches(const ConstVersionPtr & other) const override
-        {
-            return false;
-        }
-}
-
 BOOST_AUTO_TEST_CASE( name )
 {
-    UDR::ConstStringNamePtr a = UDR::StringName::Create("I AM MORDAC");
-    BOOST_CHECK_EQUAL(a->name(), std::string("I AM MORDAC"));
+    UDR::ConstStringNamePtr a = std::unique_ptr<const UDR::StringName>(
+            static_cast<const UDR::StringName*>(
+                UDR::StringName::Create("I AM MORDAC").release()));
+    BOOST_CHECK_EQUAL(a->getName(), std::string("I AM MORDAC"));
 }
 
 BOOST_AUTO_TEST_CASE( equals )
@@ -69,8 +55,18 @@ BOOST_AUTO_TEST_CASE( equals )
     BOOST_CHECK(! b->equals(c));
 }
 
-BOOST_AUTO_TEST_CASE( equals_exception )
+struct NameTypesFixture
 {
+    UDR::ConstNamePtr badTyped = std::unique_ptr<const UDR::Name>(
+            static_cast<const UDR::Name*>(new TestName()));
+    UDR::ConstNamePtr goodTyped = UDR::StringName::Create("Hilbert");
+    NameTypesFixture() = default;
+    ~NameTypesFixture() = default;
+};
+
+BOOST_FIXTURE_TEST_CASE( equalsTypes, NameTypesFixture )
+{
+    BOOST_CHECK_THROW(goodTyped->equals(badTyped), UDR::NameMismatchException);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

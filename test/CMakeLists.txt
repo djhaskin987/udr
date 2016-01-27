@@ -1,3 +1,4 @@
+include(CMakeParseArguments)
 include_directories(../src/)
 
 function(add_udr_test)

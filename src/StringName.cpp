@@ -18,16 +18,21 @@ limitations under the License.
 UDR::StringName::StringName(const std::string & name) : name(name)
 { }
 
-UDR::StringName::~StringName()
-{ }
-
-std::string UDR::StringName::name() const
+std::string UDR::StringName::getName() const
 {
-    return std::string;
+    return name;
 }
 
 
-std::string UDR::StringName::equals(const ConstNamePtr & other) const
+bool UDR::StringName::equals(const ConstNamePtr & other) const
 {
-    return std::string();
+    return false;
 }
+
+
+UDR::ConstNamePtr UDR::StringName::Create(const std::string & name)
+{
+    return std::unique_ptr<const Name>(
+            static_cast<const Name*>(new StringName(name)));
+}
+

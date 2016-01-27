@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef UDR_NAME_HPP 1
+#ifndef UDR_NAME_HPP
 #define UDR_NAME_HPP 1
 
 #include <exception>
@@ -22,8 +22,8 @@ limitations under the License.
 namespace UDR
 {
     class Name;
-    using std::unique_ptr<Name> = NamePtr;
-    using std::unique_ptr<const Name> = const ConstNamePtr;
+    typedef std::unique_ptr<Name> NamePtr;
+    typedef std::unique_ptr<const Name> ConstNamePtr;
 
     class NameMismatchException : public std::exception
     {
