@@ -26,7 +26,13 @@ std::string UDR::StringName::getName() const
 
 bool UDR::StringName::equals(const ConstNamePtr & other) const
 {
-    return false;
+    const StringName * inspectPtr;
+    inspectPtr = dynamic_cast<const StringName*>(other.get());
+    if (inspectPtr == nullptr)
+    {
+        throw UDR::NameMismatchException();
+    }
+    return inspectPtr->name == this->name;
 }
 
 

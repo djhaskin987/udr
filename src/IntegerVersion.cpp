@@ -25,25 +25,25 @@ UDR::IntegerVersion::~IntegerVersion()
 
 int UDR::IntegerVersion::compare(const ConstVersionPtr & other) const
 {
-    const IntegerVersion * other_ptr;
-    other_ptr = dynamic_cast<const IntegerVersion*>(other.get());
-    if (other_ptr == nullptr)
+    const IntegerVersion * inspectPtr;
+    inspectPtr = dynamic_cast<const IntegerVersion*>(other.get());
+    if (inspectPtr == nullptr)
     {
         throw UDR::VersionMismatchException();
     }
 
-    return (this->ver) - (other_ptr->ver);
+    return (this->ver) - (inspectPtr->ver);
 }
 
 bool UDR::IntegerVersion::matches(const ConstVersionPtr & other) const
 {
-    const IntegerVersion * other_ptr;
-    if (! (other_ptr =
+    const IntegerVersion * inspectPtr;
+    if (! (inspectPtr =
             dynamic_cast<const IntegerVersion*>(other.get())))
     {
         throw UDR::VersionMismatchException();
     }
-    return (other_ptr->ver / 10) == (this->ver / 10);
+    return (inspectPtr->ver / 10) == (this->ver / 10);
 }
 
 UDR::ConstVersionPtr UDR::IntegerVersion::Create(int val)

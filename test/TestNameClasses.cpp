@@ -45,13 +45,27 @@ BOOST_AUTO_TEST_CASE( name )
     BOOST_CHECK_EQUAL(a->getName(), std::string("I AM MORDAC"));
 }
 
-BOOST_AUTO_TEST_CASE( equals )
+struct NameEqualsFixture
 {
     UDR::ConstNamePtr a = UDR::StringName::Create("I AM MORDAC");
     UDR::ConstNamePtr b = UDR::StringName::Create("I AM MORDAC");
     UDR::ConstNamePtr c = UDR::StringName::Create("I AM WEB MISTRESS MIN");
+    NameEqualsFixture() = default;
+    ~NameEqualsFixture() = default;
+};
+
+BOOST_FIXTURE_TEST_CASE( EqualsReflection , NameEqualsFixture )
+{
     BOOST_CHECK(a->equals(a));
+}
+
+BOOST_FIXTURE_TEST_CASE( EqualsOther , NameEqualsFixture )
+{
     BOOST_CHECK(a->equals(b));
+}
+
+BOOST_FIXTURE_TEST_CASE( EqualsNotEqual , NameEqualsFixture )
+{
     BOOST_CHECK(! b->equals(c));
 }
 
