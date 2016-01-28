@@ -1,7 +1,7 @@
 /*
-   Copyright 2015-2016 Daniel Jay Haskin
+   Copyright 2016 Daniel Jay Haskin
 
-   Licensed under the Apache License, VersionComparison 2.0 (the "License");
+   Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
@@ -15,41 +15,44 @@ limitations under the License.
 */
 #ifndef UDR_VERSION_COMPARISON_HPP
 #define UDR_VERSION_COMPARISON_HPP 1
-
+#include <memory>
 namespace UDR
 {
-    enum class ComparisonRelation
+    class VersionComparison;
+    typedef std::unique_ptr<Version> VersionComparisonPtr;
+    typedef std::unique_ptr<const Version> ConstVersionComparisonPtr;
+
+    enum class VersionRelation
     {
         LESS_THAN,
-        GREATER_THAN,
-        GREATER_EQUAL,
+        LESS_EQUAL,
         EQUAL_TO,
-        NOT_EQUAL,
-        MATCHES
+        MATCHES,
+        GREATER_EQUAL,
+        GREATER_THAN
     };
-
-    class VersionComparison;
-    using std::unique_ptr<VersionComparison> = VersionComparisonPtr;
-    using std::unique_ptr<const VersionComparison> = ConstVersionComparisonPtr;
 
     class VersionComparison
     {
         public:
 
             // needed?
-            //virtual std::unique_ptr<VersionComparison*> clone() = 0;
+            //virtual std::unique_ptr<Version*> clone() = 0;
 
+            VersionComparison() = default;
             VersionComparison(const VersionComparison&) = delete;
             VersionComparison& operator=(const VersionComparison&) = delete;
 
-            virtual ~VersionComparison() = 0;
+            virtual ~VersionComparison()
+            { }
 
-            virtual const ConstVersionPtr & version() = 0;
-            virtual ComparisonRelation relation() = 0;
+            virtual const ConstVersionPtr & version() const = 0;
+            virtual VersionRelation relation() const = 0;
+            virtual bool satisfiedBy(const ConstVersionPtr & ver) = 0;
 
-            virtual int compare(const unique_ptr<VersionComparison> & other) const = 0;
-            virtual bool match(const unique_ptr<VersionComparison> & other) const = 0;
+            ConstVersionComparisonPtr Create(VersionRelation rel,
+                    ConstVersionPtr && ver);
     };
 }
 
-#endif // UDR_VERSION_COMPARISON_HPP
+#endif

@@ -29,9 +29,26 @@ endfunction()
 
 add_udr_test(
     TARGET TestVersionClasses
-    OTHER_SOURCES ${CMAKE_SOURCE_DIR}/src/IntegerVersion.cpp
+    OTHER_SOURCES
+        ${CMAKE_SOURCE_DIR}/src/Version.hpp
+        ${CMAKE_SOURCE_DIR}/src/IntegerVersion.hpp
+        ${CMAKE_SOURCE_DIR}/src/IntegerVersion.cpp
     )
 add_udr_test(
     TARGET TestNameClasses
-    OTHER_SOURCES ${CMAKE_SOURCE_DIR}/src/StringName.cpp
+    OTHER_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/Name.hpp
+    ${CMAKE_SOURCE_DIR}/src/StringName.hpp
+    ${CMAKE_SOURCE_DIR}/src/StringName.cpp
+    )
+add_udr_test(
+    TARGET TestVersionComparison
+    OTHER_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/Version.hpp
+    ${CMAKE_SOURCE_DIR}/src/IntegerVersion.hpp
+    ${CMAKE_SOURCE_DIR}/src/IntegerVersion.cpp
+    ${CMAKE_SOURCE_DIR}/src/VersionComparison.hpp
+    ${CMAKE_SOURCE_DIR}/src/VersionComparison.cpp
+    ${CMAKE_SOURCE_DIR}/src/VersionComparisonImpl.hpp
+    ${CMAKE_SOURCE_DIR}/src/VersionComparisonImpl.cpp
     )

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#define BOOST_TEST_MODULE make sure everything can work test
+#define BOOST_TEST_MODULE NameClasses
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
@@ -41,15 +41,15 @@ BOOST_AUTO_TEST_CASE( name )
 {
     UDR::ConstStringNamePtr a = std::unique_ptr<const UDR::StringName>(
             static_cast<const UDR::StringName*>(
-                UDR::StringName::Create("I AM MORDAC").release()));
-    BOOST_CHECK_EQUAL(a->getName(), std::string("I AM MORDAC"));
+                UDR::StringName::Create("I AM Klik Klak").release()));
+    BOOST_CHECK_EQUAL(a->getName(), std::string("I AM Klik Klak"));
 }
 
 struct NameEqualsFixture
 {
-    UDR::ConstNamePtr a = UDR::StringName::Create("I AM MORDAC");
-    UDR::ConstNamePtr b = UDR::StringName::Create("I AM MORDAC");
-    UDR::ConstNamePtr c = UDR::StringName::Create("I AM WEB MISTRESS MIN");
+    UDR::ConstNamePtr a = UDR::StringName::Create("I AM Klik Klak");
+    UDR::ConstNamePtr b = UDR::StringName::Create("I AM Klik Klak");
+    UDR::ConstNamePtr c = UDR::StringName::Create("I AM Click Clack");
     NameEqualsFixture() = default;
     ~NameEqualsFixture() = default;
 };
