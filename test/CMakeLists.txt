@@ -14,7 +14,7 @@ function(add_udr_test)
         ${sources}
         )
     add_test(
-        NAME ${add_udr_test_TARGET}k
+        NAME ${add_udr_test_TARGET}
         COMMAND ${add_udr_test_TARGET} --report_level=detailed
         )
     target_link_libraries(
@@ -28,27 +28,12 @@ function(add_udr_test)
 endfunction()
 
 add_udr_test(
-    TARGET TestVersionClasses
+    TARGET test_resolver.cpp
     OTHER_SOURCES
-        ${CMAKE_SOURCE_DIR}/src/Version.hpp
-        ${CMAKE_SOURCE_DIR}/src/IntegerVersion.hpp
-        ${CMAKE_SOURCE_DIR}/src/IntegerVersion.cpp
-    )
-add_udr_test(
-    TARGET TestNameClasses
-    OTHER_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/Name.hpp
-    ${CMAKE_SOURCE_DIR}/src/StringName.hpp
-    ${CMAKE_SOURCE_DIR}/src/StringName.cpp
-    )
-add_udr_test(
-    TARGET TestVersionComparison
-    OTHER_SOURCES
-    ${CMAKE_SOURCE_DIR}/src/Version.hpp
-    ${CMAKE_SOURCE_DIR}/src/IntegerVersion.hpp
-    ${CMAKE_SOURCE_DIR}/src/IntegerVersion.cpp
-    ${CMAKE_SOURCE_DIR}/src/VersionComparison.hpp
-    ${CMAKE_SOURCE_DIR}/src/VersionComparison.cpp
-    ${CMAKE_SOURCE_DIR}/src/VersionComparisonImpl.hpp
-    ${CMAKE_SOURCE_DIR}/src/VersionComparisonImpl.cpp
+        ${CMAKE_SOURCE_DIR}/src/resolver.hpp
+        ${CMAKE_SOURCE_DIR}/src/version.hpp
+        ${CMAKE_SOURCE_DIR}/src/memory_repository.hpp
+        ${CMAKE_SOURCE_DIR}/src/memory_repository.cpp
+        ${CMAKE_SOURCE_DIR}/src/integer_version.hpp
+        ${CMAKE_SOURCE_DIR}/src/integer_version.cpp
     )
