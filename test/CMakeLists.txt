@@ -19,14 +19,14 @@ function(udr_add_test)
     set_target_properties(
         ${udr_add_test_TARGET}
         PROPERTIES
-        LINKER_LANGUAGE CXX)
+        LINKER_LANGUAGE CXX
+        CXX_STANDARD 11)
 
     target_include_directories(
         ${udr_add_test_TARGET}
         PRIVATE ${CMAKE_SOURCE_DIR}/src/
         PRIVATE ${CMAKE_SOURCE_DIR}/test/
         )
-    set_property(TARGET ${udr_add_test_TARGET} PROPERTY CXX_STANDARD 11)
     add_test(
         NAME ${udr_add_test_TARGET}
         COMMAND ${udr_add_test_TARGET} --report_level=detailed
