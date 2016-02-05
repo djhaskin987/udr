@@ -22,5 +22,3 @@ feelings through blatant attack or insensitivity.
     patient and forgiving.
   - When someone disagrees with you, that's okay.
   - Remember that we are all real people.
-
-Let's all play nice :)
