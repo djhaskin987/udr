@@ -1,39 +1,56 @@
 include(CMakeParseArguments)
-include_directories(../src/)
 
-function(add_udr_test)
+function(udr_add_test)
     set(options)
     set(oneValueArgs TARGET)
-    set(multiValueArgs OTHER_SOURCES)
-    cmake_parse_arguments(add_udr_test "${options}" "${oneValueArgs}"
+    set(multiValueArgs OTHER_SOURCES FEATURES)
+    cmake_parse_arguments(udr_add_test "${options}" "${oneValueArgs}"
         "${multiValueArgs}" ${ARGN} )
-    string(REGEX REPLACE ";" " " sources "${add_udr_test_OTHER_SOURCES}")
+    string(REGEX REPLACE ";" " " sources "${udr_add_test_OTHER_SOURCES}")
+    string(REGEX REPLACE " +" ";" sources_list "${sources}")
     add_executable(
-        ${add_udr_test_TARGET}
-        ${CMAKE_CURRENT_SOURCE_DIR}/${add_udr_test_TARGET}.cpp
-        ${sources}
-        )
-    add_test(
-        NAME ${add_udr_test_TARGET}
-        COMMAND ${add_udr_test_TARGET} --report_level=detailed
+        ${udr_add_test_TARGET}
+        ${CMAKE_CURRENT_SOURCE_DIR}/${udr_add_test_TARGET}.cpp;${sources_list}
         )
     target_link_libraries(
-        ${add_udr_test_TARGET}
+        ${udr_add_test_TARGET}
         boost_unit_test_framework
         )
-    target_compile_features(
-        ${add_udr_test_TARGET}
-        PRIVATE cxx_nullptr cxx_noexcept
+    set_target_properties(
+        ${udr_add_test_TARGET}
+        PROPERTIES
+        LINKER_LANGUAGE CXX)
+
+    target_include_directories(
+        ${udr_add_test_TARGET}
+        PRIVATE ${CMAKE_SOURCE_DIR}/src/
+        PRIVATE ${CMAKE_SOURCE_DIR}/test/
+        )
+    set_property(TARGET ${udr_add_test_TARGET} PROPERTY CXX_STANDARD 11)
+    add_test(
+        NAME ${udr_add_test_TARGET}
+        COMMAND ${udr_add_test_TARGET} --report_level=detailed
         )
 endfunction()
 
-add_udr_test(
-    TARGET test_resolver.cpp
+udr_add_test(
+    TARGET TestResolver
     OTHER_SOURCES
-        ${CMAKE_SOURCE_DIR}/src/resolver.hpp
-        ${CMAKE_SOURCE_DIR}/src/version.hpp
-        ${CMAKE_SOURCE_DIR}/src/memory_repository.hpp
-        ${CMAKE_SOURCE_DIR}/src/memory_repository.cpp
-        ${CMAKE_SOURCE_DIR}/src/integer_version.hpp
-        ${CMAKE_SOURCE_DIR}/src/integer_version.cpp
-    )
+        ${CMAKE_SOURCE_DIR}/test/TestingPackage.hpp
+        ${CMAKE_SOURCE_DIR}/src/PackageSpec.hpp
+        ${CMAKE_SOURCE_DIR}/src/Resolver.hpp
+        )
+
+
+#udr_add_test(
+#    TARGET test_resolver
+#    OTHER_SOURCES
+#        ${CMAKE_SOURCE_DIR}/src/resolver.hpp
+#        ${CMAKE_SOURCE_DIR}/src/version.hpp
+#        ${CMAKE_SOURCE_DIR}/src/map_repository.hpp
+#        ${CMAKE_SOURCE_DIR}/src/int_version.hpp
+#        ${CMAKE_SOURCE_DIR}/src/int_version.cpp
+#    FEATURES
+#        cxx_deleted_functions
+#        cxx_defaulted_functions
+#    )
