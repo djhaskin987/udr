@@ -27,6 +27,12 @@ namespace UDRTest
         NameType name;
         VersionType version;
         LocationType location;
+        bool operator == (const TestingPackage& other) const
+        {
+            return name == other.name &&
+                version == other.version &&
+                location == other.location;
+        }
     };
 }
 

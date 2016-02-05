@@ -15,11 +15,14 @@ limitations under the License.
 */
 #ifndef UDR_RESOLVER_HPP
 #define UDR_RESOLVER_HPP 1
-
+#include <boost/variant.hpp>
 namespace UDR
 {
     template <typename PackageType, typename QueryType>
-    std::vector<PackageType> resolve(
+
+    boost::variant<std::vector<PackageType>,
+        std::vector<typename PackageType::NameType> >
+        resolve(
             const std::vector<PackageSpec<PackageType> > requirements,
             QueryType query)
     {
