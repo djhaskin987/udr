@@ -19,31 +19,84 @@ limitations under the License.
 #include <algorithm>
 
 namespace UDR {
-template <typename PackageType, typename QueryType>
+    template <typename PackageType, typename QueryType>
+        class Resolver
+        {
+            private:
+                std::map<typename PackageType::NameType,
+                      typename PackageType::VersionType> alreadyInstalled;
+                QueryType query;
 
-boost::variant<std::vector<PackageType>,
-    std::vector<typename PackageType::NameType> >
-resolve(
-    const std::vector<PackageSpec<PackageType> >& requirements,
-    QueryType query)
-{
-    std::vector<PackageType> result;
+                boost::variant<std::vector<PackageType>,
+                    std::vector<typename PackageType::NameType> >
+                        resolve(const std::vector<PackageSpec<PackageType> >& requirements)
+                        {
+                            std::vector<PackageType> result;
 
-    for (auto requirement = requirements.cbegin();
-         requirement != requirements.cend(); requirement++) {
-        auto answer = query(requirement->name);
-        if (!answer) {
-            return std::vector<typename PackageType::NameType>{ requirement->name };
-        }
-        else {
-            result.push_back(*(answer->begin()));
-        }
-    }
-    /*
-   * for each requirement, try to find it.
-   */
-    return result;
-}
+                            for (auto requirement = requirements.cbegin();
+                                    requirement != requirements.cend(); requirement++) {
+                                auto answer = query(requirement->name);
+                                if (!answer) {
+                                    return std::vector<typename PackageType::NameType>{ requirement->name };
+                                }
+                                else {
+                                    result.push_back(*(answer->begin()));
+                                }
+                            }
+                            return result;
+                        }
+            public:
+                typedef typename PackageType::NameType NameType;
+                typedef typename PackageType::VersionType VersionType;
+
+                Resolver() = default;
+                Resolver(const Resolver& other) = default;
+                Resolver(Resolver&& other) = default;
+                ~Resolver() = default;
+                Resolver& operator= (const Resolver& other) {
+                    return (*this = std::move(Resolver(other)));
+                }
+                Resolver& operator= (Resolver&& other) {
+                    this->alreadyInstalled = std::move(other.alreadyInstalled);
+                    this->query = std::move(other.query);
+                    return *this;
+                }
+
+                Resolver(const QueryType& q)
+                    : query(q)
+                    , alreadyInstalled()
+                {}
+
+                Resolver(QueryType&& q)
+                    : query(std::move(q))
+                    , alreadyInstalled()
+                {}
+
+                bool operator== (const Resolver<PackageType, QueryType>& other) {
+                    return this->alreadyInstalled == other.alreadyInstalled;
+                }
+
+                Resolver<PackageType, QueryType>&
+                    setAlreadyInstalled(const std::map<typename PackageType::NameType,
+                            typename PackageType::VersionType>& installed) {
+                        this->alreadyInstalled = installed;
+                        return *this;
+                    }
+
+                Resolver<PackageType, QueryType>&
+                    setAlreadyInstalled(std::map<typename PackageType::NameType,
+                            typename PackageType::VersionType>&& installed) {
+                        this->alreadyInstalled = std::move(installed);
+                        return *this;
+                    }
+
+                boost::variant<std::vector<PackageType>,
+                    std::vector<typename PackageType::NameType> >
+                        operator ()(const std::vector<PackageSpec<PackageType> >& requirements)
+                        {
+                            this->resolve(requirements);
+                        }
+        };
 }
 
 #endif // UDR_RESOLVER_HPP

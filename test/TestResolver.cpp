@@ -18,6 +18,7 @@
 typedef UDRTest::TestingPackage PackageType;
 typedef PackageType::NameType NameType;
 typedef PackageType::VersionType VersionType;
+typedef std::vector<NameType> UnsatisfiableType;
 typedef std::vector<PackageType> QueryResultsType;
 typedef std::vector<PackageType> ResolveResultsType;
 
@@ -55,6 +56,7 @@ public:
         }
     }
 };
+
 class ShouldResolveVisitor : public boost::static_visitor<bool> {
 private:
     std::vector<PackageType> expected;
@@ -65,7 +67,7 @@ public:
         , boost::static_visitor<bool>()
     {
     }
-    ShouldResolveVisitor(std::vector<PackageType>&& e, bool g)
+    ShouldResolveVisitor(std::vector<PackageType>&& e)
         : expected(std::move(e))
         , boost::static_visitor<bool>()
     {
@@ -137,35 +139,47 @@ struct NoDependenciesFixture
             { { "c", 16, "c_loc16" } } }
     };
     MapQuery query{queryMap};
+    std::vector<UDR::PackageSpec<PackageType> > request;
+    UDR::Resolver<PackageType, MapQuery> resolve{query};
 };
 
 BOOST_FIXTURE_TEST_CASE(TestSimpleRetrieval, NoDependenciesFixture)
 {
-    std::vector<UDR::PackageSpec<PackageType> > request{ { "a" } };
-    std::vector<PackageType> expected{ { "a", 25, "a_loc25" } };
+    request = { { "a" } };
+    auto result = resolve(
+            request);
 
-    auto result = UDR::resolve(
-        request,
-        query);
-    BOOST_CHECK(boost::apply_visitor(ShouldResolveVisitor(expected), result));
+    BOOST_CHECK(boost::apply_visitor(ShouldResolveVisitor{QueryResultsType{
+                    { "a", 25, "a_loc25" }
+                    }}, result));
+
     request = { { "c" } };
-    expected = { { "c", 16, "c_loc16" } };
-
-    result = UDR::resolve(
-        request,
-        query);
-    BOOST_CHECK(boost::apply_visitor(ShouldResolveVisitor(expected), result));
-
+    result = resolve(request);
+    BOOST_CHECK(boost::apply_visitor(ShouldResolveVisitor{
+                    QueryResultsType{ { "c", 16, "c_loc16" } }
+                    }, result));
 }
 
 BOOST_FIXTURE_TEST_CASE(TestSimpleUnsatisfiable, NoDependenciesFixture)
 {
-    std::vector<UDR::PackageSpec<PackageType> > request{ { "b" } };
-    std::vector<NameType> expected{ "b" };
-
-    auto result = UDR::resolve(request, query);
-    BOOST_CHECK(boost::apply_visitor(ShouldNotResolveVisitor(expected),
+    request = { { "b" } };
+    auto result = resolve(request);
+    BOOST_CHECK(boost::apply_visitor(ShouldNotResolveVisitor{{
+                    "b"
+                    }},
                 result));
+}
+
+BOOST_FIXTURE_TEST_CASE(TestSimpleAlreadyInstalled, NoDependenciesFixture)
+{
+    request = {
+        { "a" },
+        { "a" }
+    };
+    auto result = resolve(request);
+    BOOST_CHECK(boost::apply_visitor(ShouldResolveVisitor{QueryResultsType{
+                    { "a", 25, "a_loc25" }
+                    }}, result));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
