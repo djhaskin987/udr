@@ -21,6 +21,40 @@ typedef PackageType::VersionType VersionType;
 typedef std::vector<PackageType> QueryResultsType;
 typedef std::vector<PackageType> ResolveResultsType;
 
+class ShouldNotResolveVisitor : public boost::static_visitor<bool> {
+private:
+    std::vector<NameType> expected;
+
+public:
+    ShouldNotResolveVisitor(const std::vector<NameType>& e)
+        : expected(e)
+        , boost::static_visitor<bool>()
+    {
+    }
+    ShouldNotResolveVisitor(std::vector<NameType>&& e, bool g)
+        : expected(std::move(e))
+        , boost::static_visitor<bool>()
+    {
+    }
+
+    bool operator()(const std::vector<PackageType>& packages) const
+    {
+        BOOST_TEST_MESSAGE("Visited failed resolution");
+        return false;
+    }
+    bool operator()(const std::vector<NameType>& names) const
+    {
+        if (names == expected) {
+            BOOST_TEST_MESSAGE("Visited correct unsatisfiable names");
+            return true;
+        }
+        else {
+            BOOST_TEST_MESSAGE("Visited incorrect unsatisfiable names "
+                    << names[0]);
+            return false;
+        }
+    }
+};
 class ShouldResolveVisitor : public boost::static_visitor<bool> {
 private:
     std::vector<PackageType> expected;
@@ -57,7 +91,43 @@ public:
 
 BOOST_AUTO_TEST_SUITE(NoDependencies)
 
-BOOST_AUTO_TEST_CASE(TestSimpleRetrieval)
+class MapQuery
+{
+private:
+    std::map<NameType, QueryResultsType> availablePackages;
+public:
+    MapQuery() = default;
+    MapQuery(const MapQuery& other) = default;
+    MapQuery(MapQuery&& other) = default;
+    MapQuery& operator= (const MapQuery& other) {
+        return *this = std::move(MapQuery(other));
+    };
+    MapQuery& operator= (MapQuery&& other) {
+        this->availablePackages = std::move(other.availablePackages);
+    }
+    ~MapQuery() {}
+
+    MapQuery(const std::map<NameType, QueryResultsType> & packages) :
+        availablePackages(packages)
+    {}
+
+    MapQuery(std::map<NameType, QueryResultsType>&& packages) :
+        availablePackages(std::move(packages))
+    {}
+
+    boost::optional<const std::vector<PackageType> &>
+        operator ()(const NameType& n) {
+            auto itr = availablePackages.find(n);
+            if (itr == availablePackages.end()) {
+                return boost::none;
+            }
+            else {
+                return itr->second;
+            }
+    }
+};
+
+struct NoDependenciesFixture
 {
     std::map<NameType, QueryResultsType> queryMap{
         { std::string("a"),
@@ -65,23 +135,28 @@ BOOST_AUTO_TEST_CASE(TestSimpleRetrieval)
                 { "a", 13, "a_loc13" },
                 { "c", 17, "c_loc16" } } }
     };
+    MapQuery query{queryMap};
+};
 
-    std::vector<UDR::PackageSpec<PackageType> > requestA{ { "a" } };
-
-    auto result = UDR::resolve(
-        requestA,
-        [&](const NameType& n) -> boost::optional<const std::vector<PackageType>&> {
-            auto itr = queryMap.find(n);
-            if (itr == queryMap.end()) {
-                return boost::none;
-            }
-            else {
-                return itr->second;
-            }
-        });
+BOOST_FIXTURE_TEST_CASE(TestSimpleRetrieval, NoDependenciesFixture)
+{
+    std::vector<UDR::PackageSpec<PackageType> > request{ { "a" } };
     std::vector<PackageType> expected{ { "a", 25, "a_loc25" } };
 
+    auto result = UDR::resolve(
+        request,
+        query);
     BOOST_CHECK(boost::apply_visitor(ShouldResolveVisitor(expected), result));
+}
+
+BOOST_FIXTURE_TEST_CASE(TestSimpleUnsatisfiable, NoDependenciesFixture)
+{
+    std::vector<UDR::PackageSpec<PackageType> > request{ { "c" } };
+    std::vector<NameType> expected{ "c" };
+
+    auto result = UDR::resolve(request, query);
+    BOOST_CHECK(boost::apply_visitor(ShouldNotResolveVisitor(expected),
+                result));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
