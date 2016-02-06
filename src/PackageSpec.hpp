@@ -17,14 +17,12 @@ limitations under the License.
 #define UDR_PACKAGE_SPEC_HPP 1
 
 #include <string>
-namespace UDR
-{
-    template <typename P>
-    struct PackageSpec
-    {
-        typedef typename P::NameType NameType;
-        NameType name;
-    };
+namespace UDR {
+template <typename P>
+struct PackageSpec {
+    typedef typename P::NameType NameType;
+    NameType name;
+};
 }
 
 #endif // UDR_PACKAGE_SPEC_HPP

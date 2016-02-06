@@ -18,18 +18,20 @@ limitations under the License.
 #ifndef GRIPE_HPP
 #define GRIPE_HPP 1
 
-
-
 namespace udr {
-class Gripe
-{
-    private:
-        int a;
-    public:
-        Gripe() : a(1) {}
-        bool is(int b) {
-            return a == b;
-        }
+class Gripe {
+private:
+    int a;
+
+public:
+    Gripe()
+        : a(1)
+    {
+    }
+    bool is(int b)
+    {
+        return a == b;
+    }
 };
 }
 #endif // GRIPE_HPP

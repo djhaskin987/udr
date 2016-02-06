@@ -17,23 +17,19 @@ limitations under the License.
 #define UDR_TESTING_PACKAGE_HPP 1
 
 #include <string>
-namespace UDRTest
-{
-    struct TestingPackage
+namespace UDRTest {
+struct TestingPackage {
+    typedef std::string NameType;
+    typedef int VersionType;
+    typedef std::string LocationType;
+    NameType name;
+    VersionType version;
+    LocationType location;
+    bool operator==(const TestingPackage& other) const
     {
-        typedef std::string NameType;
-        typedef int VersionType;
-        typedef std::string LocationType;
-        NameType name;
-        VersionType version;
-        LocationType location;
-        bool operator == (const TestingPackage& other) const
-        {
-            return name == other.name &&
-                version == other.version &&
-                location == other.location;
-        }
-    };
+        return name == other.name && version == other.version && location == other.location;
+    }
+};
 }
 
 #endif // UDR_TESTING_PACKAGE_HPP

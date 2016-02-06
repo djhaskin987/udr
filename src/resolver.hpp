@@ -36,48 +36,49 @@ limitations under the License.
  */
 namespace udr {
 
-    typedef std::string url_type;
-    template <typename V>
-        using std::function<bool(const V &, const V &)> = constraint_type;
-    template <typename N, typename V>
-        using std::pair<N, constraint_type<V> > = specifier_type;
-    template <typename N, typename V>
-        using std::vector<specifier_type<N, V> > = possibilities_type;
-    template <typename N, typename V>
-        using std::vector<possibilities_type<N, V> > = order_type;
-    template <typename N, typename V>
-        using std::tuple<V,         // version
-              url_type,             // URL
-              order_type<N, V>,     // requires
-              boost::optional<N>,   // *obsoletes* (not obsoleted_by), maybe
-              order_type<N, V> >    // suggests
-                  = package_type;
-    template <typename N, typename V>
-        using 
+typedef std::string url_type;
+template <typename V>
+using std::function<bool(const V&, const V&)> = constraint_type;
+template <typename N, typename V>
+using std::pair<N, constraint_type<V> > = specifier_type;
+template <typename N, typename V>
+using std::vector<specifier_type<N, V> > = possibilities_type;
+template <typename N, typename V>
+using std::vector<possibilities_type<N, V> > = order_type;
+template <typename N, typename V>
+using std::tuple<V, // version
+    url_type, // URL
+    order_type<N, V>, // requires
+    boost::optional<N>, // *obsoletes* (not obsoleted_by), maybe
+    order_type<N, V> > // suggests
+    = package_type;
+template <typename N, typename V>
+using
 
     template <typename N, typename V>
     class repository {
-        public:
-            typedef N name_type;
-            typedef V version_type;
-            virtual std::vector<package_type> query(const N & name) const = 0;
-    };
+public:
+    typedef N name_type;
+    typedef V version_type;
+    virtual std::vector<package_type> query(const N& name) const = 0;
+};
 
-    template <typename N, typename V>
-    class resolver {
-    private:
-        typedef std::vector<std::pair<N, std::set<constraint<V> > > >
-            resolver_failed_type;
-        typedef std::pair<name_type, resolver_success_type> resolver_unneeded_type;
-        typedef boost::variant<resolver_success_type,
-                               resolver_failed_type,
-                               resolver_unneeded_type> resolver_result_type;
-        typedef std::vector<std::vector<std::pair<N, std::set<constraint<V> > > > >
-            order_type;
+template <typename N, typename V>
+class resolver {
+private:
+    typedef std::vector<std::pair<N, std::set<constraint<V> > > >
+        resolver_failed_type;
+    typedef std::pair<name_type, resolver_success_type> resolver_unneeded_type;
+    typedef boost::variant<resolver_success_type,
+        resolver_failed_type,
+        resolver_unneeded_type> resolver_result_type;
+    typedef std::vector<std::vector<std::pair<N, std::set<constraint<V> > > > >
+        order_type;
 =======
 #include <package.hpp>
 
-namespace udr {
+namespace udr
+{
 
     enum class suggests_policy {
         REQUIRED,
@@ -86,9 +87,8 @@ namespace udr {
     };
     template <typename N, typename V>
     class resolver {
-        public:
-
-        private:
+    public:
+    private:
         //suggests_policy policy;
         // herein lies a lot of typedefs and the use of boost::variant.
         // Please excuse my heavy LISP accent.
@@ -110,7 +110,7 @@ namespace udr {
         typedef boost::variant<resolver_success_type,
                                resolver_failed_type> resolver_result_type;
         */
-       /* typedef boost::optional<resolver_success_type>
+        /* typedef boost::optional<resolver_success_type>
             resolver_result_type;
 
 >>>>>>> Stashed changes
@@ -262,7 +262,7 @@ namespace udr {
         }
     */
 >>>>>>> Stashed changes
-    };
+};
 }
 
 #endif // UDR_REPOSITORY_HPP

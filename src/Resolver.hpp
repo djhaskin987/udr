@@ -22,24 +22,27 @@ namespace UDR {
 template <typename PackageType, typename QueryType>
 
 boost::variant<std::vector<PackageType>,
-               std::vector<typename PackageType::NameType>> resolve(
-                       const std::vector<PackageSpec<PackageType>> &requirements,
-        QueryType query) {
-  std::vector<PackageType> result;
+    std::vector<typename PackageType::NameType> >
+resolve(
+    const std::vector<PackageSpec<PackageType> >& requirements,
+    QueryType query)
+{
+    std::vector<PackageType> result;
 
-  for (auto requirement = requirements.cbegin();
-       requirement != requirements.cend(); requirement++) {
-    auto answer = query(requirement->name);
-    if (!answer) {
-      return std::vector<typename PackageType::NameType>{requirement->name};
-    } else {
-      result.push_back(*(answer->begin()));
+    for (auto requirement = requirements.cbegin();
+         requirement != requirements.cend(); requirement++) {
+        auto answer = query(requirement->name);
+        if (!answer) {
+            return std::vector<typename PackageType::NameType>{ requirement->name };
+        }
+        else {
+            result.push_back(*(answer->begin()));
+        }
     }
-  }
-  /*
+    /*
    * for each requirement, try to find it.
    */
-  return result;
+    return result;
 }
 }
 
