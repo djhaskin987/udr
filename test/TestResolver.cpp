@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE make sure everything can work test
+#define BOOST_TEST_MODULE Resolver
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #define UDR_UNIT_TEST
@@ -21,34 +21,38 @@ typedef PackageType::VersionType VersionType;
 typedef std::vector<PackageType> QueryResultsType;
 typedef std::vector<PackageType> ResolveResultsType;
 
-class TestingResolveVisitor : public boost::static_visitor<bool>
+class ShouldResolveVisitor : public boost::static_visitor<bool>
 {
     private:
         std::vector<PackageType> expected;
-        bool isGood;
 
     public:
-        TestingResolveVisitor(const std::vector<PackageType>& e, bool g) :
-            expected(e), isGood(g), boost::static_visitor<bool>() {}
-        TestingResolveVisitor(std::vector<PackageType>&& e, bool g) :
-            expected(std::move(e)), isGood(g), boost::static_visitor<bool>() {}
+        ShouldResolveVisitor(const std::vector<PackageType>& e) :
+            expected(e), boost::static_visitor<bool>() {}
+        ShouldResolveVisitor(std::vector<PackageType>&& e, bool g) :
+            expected(std::move(e)), boost::static_visitor<bool>() {}
 
         bool operator ()(const std::vector<PackageType>& packages) const
         {
             if (packages == expected)
             {
-                return isGood;
+                BOOST_TEST_MESSAGE( "Visited correct packages" );
+                return true;
             }
             else
             {
-                return !isGood;
+                BOOST_TEST_MESSAGE( "Visited incorrect packages " << packages[0].name );
+                return false;
             }
         }
         bool operator ()(const std::vector<NameType>& names) const
         {
-            return !isGood;
+            BOOST_TEST_MESSAGE( "Visited failed resolution" );
+            return false;
         }
 };
+
+BOOST_AUTO_TEST_SUITE( NoDependencies )
 
 
 BOOST_AUTO_TEST_CASE( TestSimpleRetrieval )
@@ -80,6 +84,8 @@ BOOST_AUTO_TEST_CASE( TestSimpleRetrieval )
         {"a", 25, "a_loc25"}
     };
 
-    BOOST_CHECK ( boost::apply_visitor(
-                TestingResolveVisitor(expected, true), result) );
+    BOOST_CHECK(boost::apply_visitor(
+                ShouldResolveVisitor(expected), result) );
 }
+
+BOOST_AUTO_TEST_SUITE_END()

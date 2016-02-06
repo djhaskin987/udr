@@ -16,6 +16,8 @@ limitations under the License.
 #ifndef UDR_RESOLVER_HPP
 #define UDR_RESOLVER_HPP 1
 #include <boost/variant.hpp>
+#include <algorithm>
+
 namespace UDR
 {
     template <typename PackageType, typename QueryType>
@@ -23,10 +25,29 @@ namespace UDR
     boost::variant<std::vector<PackageType>,
         std::vector<typename PackageType::NameType> >
         resolve(
-            const std::vector<PackageSpec<PackageType> > requirements,
+            const std::vector<PackageSpec<PackageType> >& requirements,
             QueryType query)
     {
-        return std::vector<PackageType>();
+        std::vector<PackageType> result;
+
+        for (auto requirement = requirements.cbegin();
+                requirement != requirements.cend();
+                requirement++) {
+            auto answer = query(requirement->name);
+            if (!answer) {
+                return std::vector<typename PackageType::NameType>{
+                    requirement->name
+                };
+            }
+            else
+            {
+                result.push_back(*(answer->begin()));
+            }
+        }
+        /*
+         * for each requirement, try to find it.
+         */
+        return result;
     }
 }
 

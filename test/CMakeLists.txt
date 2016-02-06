@@ -29,7 +29,7 @@ function(udr_add_test)
         )
     add_test(
         NAME ${udr_add_test_TARGET}
-        COMMAND ${udr_add_test_TARGET} --report_level=detailed
+        COMMAND ${udr_add_test_TARGET} --report_level=detailed --log_level=message
         )
 endfunction()
 
