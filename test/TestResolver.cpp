@@ -130,10 +130,11 @@ public:
 struct NoDependenciesFixture
 {
     std::map<NameType, QueryResultsType> queryMap{
-        { std::string("a"),
+        { "a",
             { { "a", 25, "a_loc25" },
-                { "a", 13, "a_loc13" },
-                { "c", 17, "c_loc16" } } }
+                { "a", 13, "a_loc13" } } },
+        { "c",
+            { { "c", 16, "c_loc16" } } }
     };
     MapQuery query{queryMap};
 };
@@ -147,12 +148,20 @@ BOOST_FIXTURE_TEST_CASE(TestSimpleRetrieval, NoDependenciesFixture)
         request,
         query);
     BOOST_CHECK(boost::apply_visitor(ShouldResolveVisitor(expected), result));
+    request = { { "c" } };
+    expected = { { "c", 16, "c_loc16" } };
+
+    result = UDR::resolve(
+        request,
+        query);
+    BOOST_CHECK(boost::apply_visitor(ShouldResolveVisitor(expected), result));
+
 }
 
 BOOST_FIXTURE_TEST_CASE(TestSimpleUnsatisfiable, NoDependenciesFixture)
 {
-    std::vector<UDR::PackageSpec<PackageType> > request{ { "c" } };
-    std::vector<NameType> expected{ "c" };
+    std::vector<UDR::PackageSpec<PackageType> > request{ { "b" } };
+    std::vector<NameType> expected{ "b" };
 
     auto result = UDR::resolve(request, query);
     BOOST_CHECK(boost::apply_visitor(ShouldNotResolveVisitor(expected),
