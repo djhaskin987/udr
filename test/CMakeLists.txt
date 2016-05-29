@@ -34,7 +34,7 @@ function(udr_add_test)
 endfunction()
 
 udr_add_test(
-    TARGET test_spec
+    TARGET test_pkg_spec
     OTHER_SOURCES
         ${CMAKE_SOURCE_DIR}/src/package.hpp
         ${CMAKE_SOURCE_DIR}/src/spec.hpp
