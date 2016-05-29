@@ -10,7 +10,7 @@ namespace udr
     class repository
     {
     public:
-        virtual result_type<N,V> query(const N name) const = 0;
+        virtual result_type<N,V> query(const N& name) const = 0;
         virtual ~repository() {}
     };
 }

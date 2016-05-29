@@ -9,12 +9,11 @@
 namespace udr
 {
     template <typename N, typename V>
-    class package
+    struct package
     {
-        public:
-            N name;
-            V version;
-            std::string location;
+        N name;
+        V version;
+        std::string location;
     };
     template <typename N, typename V>
     using result_type = boost::variant<
