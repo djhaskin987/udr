@@ -19,6 +19,7 @@ install_manifest.txt
 *.lo
 *.o
 *.obj
+a.out
 
 # Precompiled Headers
 *.gch
