@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE Resolver
+#define BOOST_TEST_MODULE pkg_spec
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #define UDR_UNIT_TEST
@@ -25,7 +25,7 @@ private:
 };
 
 
-BOOST_AUTO_TEST_SUITE(spec)
+BOOST_AUTO_TEST_SUITE(pkg_spec)
 
 BOOST_AUTO_TEST_CASE(Dummy)
 {
