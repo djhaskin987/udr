@@ -2,7 +2,7 @@
 #define UDR_PACKAGE_HPP
 #pragma once
 
-#include <boost/variant.hpp>
+#include <boost/variant/variant.hpp>
 #include <string>
 #include <vector>
 
