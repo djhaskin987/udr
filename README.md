@@ -18,28 +18,38 @@ can use it in my career and I hope it may be helpful to others, too.
 # Philosophy
 
 Ultimately, I want a dependency resolver that just *works*. Taking cues from
-the coded package repository, the core resolver will find the first solution
-available using the most "preferred" packages first as returned by the
-repository.  The resolver may sacrifice speed for correctness, but generally a
-few seconds longer in a build is far better than a failed dependency
-resolution.
+the coded package repository, the core `spec` object will find the first
+solution available using the most "preferred" packages first as returned by the
+repository.
+
+I aimed for determinism in how packages were resolved, but I also aimed for the
+ability for the user to be able to give the package manager hints if it doesn't
+get resolution quite right. That way, the user can reason easier about what
+happened if something goes wrong and take steps to correct it by providing
+different inputs.
 
 ## Why C++?
 
-I seriously considered writing this in a language higher-level C++, especially
-since it doesn't need to be lightning fast or multi-threaded, and others who
-might be interested in developing a DevOps tool would probably prefer a higher
-level language. However, for DevOps engineers, the intended users of the tool,
-writing the tool in C++ has some serious advantages:
+I seriously considered writing this in a language higher-level than C++,
+especially since it doesn't need to be lightning fast or multi-threaded, and
+others who might be interested in developing a DevOps tool would probably
+prefer a higher level language. However, for DevOps engineers, the intended
+users of the tool, writing the tool in C++ has some serious advantages:
 
 1) The library would then have little need for dependencies. Just
    install the package and go. No interpreter, virtual machine,
    or 3rd party library needed.
 2) The possibility of having bindings from my library into other
    languages later. It will not matter if an engineer needs to use
-   the library in Ruby or Python. The library will support both.
+   the library in Ruby or Python. The library can support both.
 3) Sometimes languages go out of style. In its 30+ years of existence,
    C++ has yet to do this.
+
+Then, I really *did* attempt to write it in a higher-level language (Clojure).
+Then I realized how much this problem could benefit from a strongly-typed
+language.
+
+I just wanted a rock-solid, portable piece of code that just works.
 
 # Supported OSes
 
@@ -51,12 +61,15 @@ OS | Compiler on OS
 Windows | msvc2013
 Mac | clang
 Ubuntu 14.04-16.04 | gcc
-CentOS 6-7 | gcc
+CentOS 7 | gcc
 
 I will try to make this code build on Linux first, then Windows, but I'll need
 help with the Mac side of things, as I don't own a Mac :(
 
 ## What about clang?
+
+This library links against boost, and I wanted to be able to link against
+the system-provided boost packages. That means gcc on linux for now :(
 
 If you want to help with this, I will *totally* accept your PR. Just have a
 look at [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE\_OF\_CONDUCT.md](CODE\_OF\_CONDUCT.md) :)

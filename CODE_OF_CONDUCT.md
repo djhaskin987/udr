@@ -8,10 +8,10 @@ contribution. There are a lot of people out there with a lot of
 opinions and philosophies.  Therefore, as a rule, any discussion, pull
 request, feature request, bug report, or other contribution, made in
 part or as a whole with the apparent purpose of talking about,
-criticizing, or affecting anything but what the code should be and how
+criticizing, or affecting anything but what the *code* should be and how
 it should behave is at best off topic, and at worst offensive to
 somebody. I will listen to complaints at
-![this udr abuse email](udr-abuse-email.svg). I reserve the right to
+![this email](report-abuse.png). I reserve the right to
 delete any comments or block PRs if those contributions are hurting someone's
 feelings through blatant attack or insensitivity.
 
