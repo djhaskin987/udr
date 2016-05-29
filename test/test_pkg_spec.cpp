@@ -15,9 +15,18 @@ class mock_repository : public repository<std::string, int>
 public:
     virtual ~mock_repository() {}
 
-    virtual result_type<std::string, int> query(const std::string name)
+    virtual result_type<std::string, int> query(const std::string name) const
     {
-        return std::vector<std::string>();
+        auto item_itr = (this->packages).find(name);
+        if (item_itr == (this->packages).end())
+        {
+            return std::vector<std::string> { std::string() + "`" + name +
+                "` is not in the map."};
+        }
+        else
+        {
+            return *item_itr;
+        }
     }
 private:
     std::map<std::string, std::vector<package<std::string, int> > >
