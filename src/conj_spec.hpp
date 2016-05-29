@@ -11,7 +11,7 @@ namespace udr
     {
     public:
         virtual const result_type<N,V>
-            resolve(const repository<N, V>* r)
+            resolve(const repository<N, V>* r) const
         {
             return std::vector<std::string>();
         }

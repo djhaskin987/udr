@@ -13,7 +13,7 @@ namespace udr
     {
         public:
             virtual result_type<N, V>
-                resolve(const repository<N, V>* r) = 0;
+                resolve(const repository<N, V>* r) const = 0;
     };
 }
 

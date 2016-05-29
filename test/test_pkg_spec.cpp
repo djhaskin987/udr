@@ -6,7 +6,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <map>
-#include "pkg_spec.hpp"
+#include "name_spec.hpp"
 
 using namespace udr;
 
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(basic)
         {"hello", { {"hello", 45, "hello_loc"} } }
     };
     mock_repository mr = {packages};
-    std::unique_ptr<spec<std::string, int>> tested(udr::pkg_spec<std::string, int>());
+    std::unique_ptr<spec<std::string, int>> tested(udr::name_spec<std::string, int>());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

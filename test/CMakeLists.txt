@@ -37,8 +37,9 @@ udr_add_test(
     TARGET test_pkg_spec
     OTHER_SOURCES
         ${CMAKE_SOURCE_DIR}/src/package.hpp
+        ${CMAKE_SOURCE_DIR}/src/repository.hpp
         ${CMAKE_SOURCE_DIR}/src/spec.hpp
-        ${CMAKE_SOURCE_DIR}/src/pkg_spec.hpp
+        ${CMAKE_SOURCE_DIR}/src/name_spec.hpp
         )
 
 
