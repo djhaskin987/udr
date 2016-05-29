@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE pkg_spec
+#define BOOST_TEST_MODULE name_spec
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #define UDR_UNIT_TEST
@@ -43,17 +43,22 @@ private:
 };
 
 
-BOOST_AUTO_TEST_SUITE(pkg_spec)
+BOOST_AUTO_TEST_SUITE(name_spec)
 
-BOOST_AUTO_TEST_CASE(basic)
+struct hello_repo
 {
-    std::map<std::string, std::vector<package<std::string, int>>> packages = {
-        {"hello", { {"hello", 45, "hello_loc"}, {"hello", 54, "col_olleh" } } }
+    mock_repository mr = {
+        {
+            {"hello", { {"hello", 45, "hello_loc"}, {"hello", 54, "col_olleh" } } }
+        }
     };
-    mock_repository mr = {packages};
+};
+
+BOOST_FIXTURE_TEST_CASE(successful_retrieval, hello_repo)
+{
     auto tested = make_name_spec<std::string, int>("hello");
     auto results = tested->resolve(&mr);
-    if (std::vector<std::string>* errors = boost::get<std::vector<std::string>>(&results))
+    if (emessages_type* errors = boost::get<emessages_type>(&results))
     {
         BOOST_ERROR(std::string("Errors."));
     }
@@ -66,7 +71,19 @@ BOOST_AUTO_TEST_CASE(basic)
         BOOST_CHECK(packages->begin()->version == expected.version);
         BOOST_CHECK(packages->begin()->location == expected.location);
     }
+}
 
+BOOST_FIXTURE_TEST_CASE(nothing_found, hello_repo)
+{
+    auto tested = make_name_spec<std::string, int>("goodbye");
+    auto results = tested->resolve(&mr);
+    if (std::vector<package<std::string,int>>* packages =
+            boost::get<std::vector<package<std::string, int>>>(&results))
+    {
+        BOOST_ERROR(std::string() +
+                "An error should have been reported when querying for " +
+                "a non existent package.");
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

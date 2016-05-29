@@ -15,9 +15,10 @@ namespace udr
         V version;
         std::string location;
     };
+    typedef std::vector<std::string> emessages_type;
     template <typename N, typename V>
     using result_type = boost::variant<
-        std::vector<std::string>,
+        emessages_type,
         std::vector<package<N, V> > >;
 }
 

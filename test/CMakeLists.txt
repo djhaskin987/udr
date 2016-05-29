@@ -2,15 +2,16 @@ include(CMakeParseArguments)
 
 function(udr_add_test)
     set(options)
-    set(oneValueArgs TARGET)
+    set(oneValueArgs TEST)
     set(multiValueArgs OTHER_SOURCES FEATURES)
     cmake_parse_arguments(udr_add_test "${options}" "${oneValueArgs}"
         "${multiValueArgs}" ${ARGN} )
     string(REGEX REPLACE ";" " " sources "${udr_add_test_OTHER_SOURCES}")
     string(REGEX REPLACE " +" ";" sources_list "${sources}")
+    set(udr_add_test_TARGET "${udr_add_test_TEST}")
     add_executable(
         ${udr_add_test_TARGET}
-        ${CMAKE_CURRENT_SOURCE_DIR}/${udr_add_test_TARGET}.cpp;${sources_list}
+        ${CMAKE_CURRENT_SOURCE_DIR}/${udr_add_test_TEST}.cpp;${sources_list}
         )
     target_link_libraries(
         ${udr_add_test_TARGET}
@@ -34,7 +35,7 @@ function(udr_add_test)
 endfunction()
 
 udr_add_test(
-    TARGET test_pkg_spec
+    TEST test_name_spec
     OTHER_SOURCES
         ${CMAKE_SOURCE_DIR}/src/package.hpp
         ${CMAKE_SOURCE_DIR}/src/repository.hpp
