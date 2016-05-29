@@ -11,7 +11,7 @@ enable_testing()
 
 
 
-find_package(Boost 1.58.0 EXACT REQUIRED)
+find_package(Boost 1.60.0 EXACT REQUIRED)
 
 add_subdirectory(src)
 add_subdirectory(test)
