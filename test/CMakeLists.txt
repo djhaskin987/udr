@@ -34,11 +34,11 @@ function(udr_add_test)
 endfunction()
 
 udr_add_test(
-    TARGET TestResolver
+    TARGET test_spec
     OTHER_SOURCES
-        ${CMAKE_SOURCE_DIR}/test/TestingPackage.hpp
-        ${CMAKE_SOURCE_DIR}/src/PackageSpec.hpp
-        ${CMAKE_SOURCE_DIR}/src/Resolver.hpp
+        ${CMAKE_SOURCE_DIR}/src/package.hpp
+        ${CMAKE_SOURCE_DIR}/src/spec.hpp
+        ${CMAKE_SOURCE_DIR}/src/pkg_spec.hpp
         )
 
 
