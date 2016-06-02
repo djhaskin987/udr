@@ -21,6 +21,7 @@ namespace udr
         virtual result_type<N,V>
             resolve(const repository<N, V>* r) const
         {
+
             return emessages_type();
         }
     private:
