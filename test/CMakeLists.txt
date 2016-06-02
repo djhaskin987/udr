@@ -41,6 +41,20 @@ udr_add_test(
         ${CMAKE_SOURCE_DIR}/src/repository.hpp
         ${CMAKE_SOURCE_DIR}/src/spec.hpp
         ${CMAKE_SOURCE_DIR}/src/name_spec.hpp
+        ${CMAKE_SOURCE_DIR}/test/mock_repository.hpp
+        ${CMAKE_SOURCE_DIR}/test/mock_repository.cpp
+        )
+
+udr_add_test(
+    TEST test_version_relation_spec
+    OTHER_SOURCES
+        ${CMAKE_SOURCE_DIR}/src/package.hpp
+        ${CMAKE_SOURCE_DIR}/src/repository.hpp
+        ${CMAKE_SOURCE_DIR}/src/spec.hpp
+        ${CMAKE_SOURCE_DIR}/src/name_spec.hpp
+        ${CMAKE_SOURCE_DIR}/src/version_relation_spec.hpp
+        ${CMAKE_SOURCE_DIR}/test/mock_repository.hpp
+        ${CMAKE_SOURCE_DIR}/test/mock_repository.cpp
         )
 
 
