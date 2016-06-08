@@ -10,33 +10,34 @@
 namespace udr
 {
 
-    template <typename N, typename V,
+    template <typename P,
              template <typename T> typename R = std::greater_equal>
-    class version_relation_spec : public spec<N,V>
+    class version_relation_spec : public spec<P>
     {
     public:
-        version_relation_spec(const N& name, const V& version) :
+        version_relation_spec(const typename P::name_type& name,
+                const typename P::version_type& version) :
             nspec(name), version(version), relation() {}
 
-        virtual result_type<N,V>
-            resolve(const repository<N, V>* r) const
+        virtual result_type<P>
+            resolve(const repository<P>* r) const
         {
-
-            return emessages_type();
+            return udr::none;
         }
     private:
-        name_spec<N,V> nspec;
-        V version;
-        R<V> relation;
+        name_spec<P> nspec;
+        typename P::version_type version;
+        R<typename P::version_type> relation;
     };
 
-    template <typename N, typename V,
+    template <typename P,
              template <typename T> typename R = std::greater_equal>
-    std::unique_ptr<spec<N,V>>
-    make_vr_spec(const N& name, const V& version)
+    std::unique_ptr<spec<P>>
+    make_vr_spec(const typename P::name_type& name,
+            const typename P::version_type& version)
     {
-        return std::unique_ptr<spec<N,V>>{
-            new version_relation_spec<N,V,R>(name, version)
+        return std::unique_ptr<spec<P>>{
+            new version_relation_spec<P,R>(name, version)
         };
     }
 }

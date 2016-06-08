@@ -6,14 +6,14 @@
 
 namespace udr
 {
-    template <typename N, typename V>
-    class conj_spec : public spec<N,V>
+    template <typename P>
+    class conj_spec : public spec<P>
     {
     public:
-        virtual const result_type<N,V>
-            resolve(const repository<N, V>* r) const
+        virtual const result_type<P>
+            resolve(const repository<P>* r) const
         {
-            return std::vector<std::string>();
+            return udr::none;
         }
     };
 }

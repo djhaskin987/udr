@@ -6,14 +6,15 @@
 
 namespace udr
 {
-    template <typename N, typename V>
-    class neg_spec : public spec<N,V>
+    /* Meant to embody a conflict. */
+    template <typename P>
+    class neg_spec : public spec<P>
     {
     public:
-        virtual const result_type<N,V>
-            resolve(const repository* r) const
+        virtual const result_type<P>
+            resolve(const repository<P>* r) const
         {
-            return std::vector<std::string>();
+            return udr::none;
         }
     };
 }

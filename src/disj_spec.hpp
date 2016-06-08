@@ -11,7 +11,7 @@ namespace udr
         virtual const result_type<N,V>
             resolve(const repository* r) const
         {
-            return std::vector<std::string>();
+            return udr::none;
         }
     };
 }

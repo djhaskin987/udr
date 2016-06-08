@@ -1,0 +1,5 @@
+* Template about package types, not name/version/location
+* Use template for container instead of putting `vector`s everywhere
+* Use template for location type
+* Where applicable, use boost static visitor instead of the other.
+* Change BOOST_REQUIRE so that it doesn't stop tests then and there if it's wrong

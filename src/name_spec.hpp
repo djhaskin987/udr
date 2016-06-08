@@ -6,51 +6,43 @@
 #include <memory>
 namespace udr
 {
-    template <typename N, typename V>
-    class name_spec : public spec<N,V>
+
+    template <typename P>
+    class name_spec : public spec<P>
     {
     public:
-        name_spec(const N& name) : name(name) {}
-        virtual result_type<N,V>
-            resolve(const repository<N, V>* r) const
+        name_spec(const typename P::name_type& name) : name(name) {}
+        virtual result_type<P>
+            resolve(const repository<P>* r) const
         {
             auto results = r->query(name);
-            if (std::vector<package<N,V> >* packages =
-                    boost::get<std::vector<package<N,V>>>(&results))
+            if (results)
             {
-                if (packages->size() == 0)
+                if (results->size() == 0)
                 {
-                    return emessages_type {
-                        std::string() +
-                            "While resolving a package name, matching packages were returned when " +
-                            "query `" + name + "` was used."
-                    };
+                    return udr::none;
                 }
                 else
                 {
-                    return std::vector<package<N,V>> {
-                        *(packages->begin())
+                    return std::vector<P> {
+                        *(results->begin())
                     };
                 }
             }
             else
             {
-                emessages_type& messages = boost::get<emessages_type>(results);
-                messages.push_back(
-                        std::string("While resolving a package name, the ") +
-                        "repository reported an error.");
-                return messages;
+                return udr::none;
             }
         }
     private:
-        N name;
+        typename P::name_type name;
     };
-    template <typename N, typename V>
-    std::unique_ptr<spec<N,V>> make_name_spec(const N& name)
-    {
-        return std::unique_ptr<spec<N,V>>{ new name_spec<N,V>(name) };
-    }
 
+    template <typename P>
+    std::unique_ptr<spec<P>> make_name_spec(const typename P::name_type& name)
+    {
+        return std::unique_ptr<spec<P>>{ new name_spec<P>(name) };
+    }
 }
 
 #endif // UDR_NAME_SPEC

@@ -8,12 +8,12 @@
 
 namespace udr
 {
-    template <typename N, typename V>
+    template <typename P>
     class spec
     {
         public:
-            virtual result_type<N, V>
-                resolve(const repository<N, V>* r) const = 0;
+            virtual result_type<P>
+                resolve(const repository<P>* r) const = 0;
     };
 }
 
