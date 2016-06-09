@@ -17,7 +17,7 @@ struct hello_repo
 {
     mock_repository mr = {
         {
-            {"hello", { {"hello", 45, nullptr}, {"hello", 54, nullptr} } }
+            {"hello", { {"hello", 45 }, {"hello", 54 } } }
         }
     };
 };
@@ -28,7 +28,7 @@ BOOST_FIXTURE_TEST_CASE(successful_retrieval, hello_repo)
     auto results = tested->resolve(&mr);
     BOOST_REQUIRE(results);
     BOOST_CHECK(results->size() == 1);
-    package<std::string, int> expected = { "hello", 45, nullptr };
+    package<std::string, int> expected = { "hello", 45 };
     BOOST_CHECK(results->begin()->name == expected.name);
     BOOST_CHECK(results->begin()->version == expected.version);
 }

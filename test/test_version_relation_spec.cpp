@@ -20,9 +20,9 @@ namespace test_vr
             {
                 {
                     "hello", {
-                        {"hello", 54, nullptr},
-                        {"hello", 45, nullptr},
-                        {"hello", 44, nullptr}
+                        { "hello", 54 },
+                        { "hello", 45 },
+                        { "hello", 44 }
                     }
                 }
             }
@@ -49,13 +49,13 @@ BOOST_AUTO_TEST_SUITE(name_spec)
 BOOST_FIXTURE_TEST_CASE(successful_retrieval, test_vr::hello_repo)
 {
     test_vr::resolve_for_success<std::less>("hello", 45, mr,
-        { "hello", 44, nullptr });
+        { "hello", 44 });
 }
 
 BOOST_FIXTURE_TEST_CASE(order_is_correct, test_vr::hello_repo)
 {
     test_vr::resolve_for_success<std::greater_equal>("hello", 0, mr,
-                        {"hello", 54, nullptr});
+                        { "hello", 54 });
 }
 
 BOOST_FIXTURE_TEST_CASE(bad_name, test_vr::hello_repo)
